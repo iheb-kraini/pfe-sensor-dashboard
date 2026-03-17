@@ -38,8 +38,8 @@ api.interceptors.response.use(
           `${import.meta.env.VITE_API_URL ?? "http://localhost:3000"}/auth/refresh`,
           { refresh_token: refreshToken },
         );
-        tokenStorage.setAccess(data.accessToken);
-        original.headers.Authorization = `Bearer ${data.accessToken}`;
+        tokenStorage.setAccess(data.access_token);
+        original.headers.Authorization = `Bearer ${data.access_token}`;
         return api(original); // retry original request
       } catch {
         tokenStorage.clear();
