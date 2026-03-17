@@ -1,5 +1,6 @@
 import axios from "axios";
 import { tokenStorage } from "../utils/token";
+import { useAuthStore } from "../store/auth.store";
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:3000",
@@ -17,19 +18,16 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config;
 
-    // skip refresh logic for auth endpoints entirely
     if (original.url?.includes("/auth/")) {
       return Promise.reject(error);
     }
 
-    // access token expired — try to refresh once
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true;
       const refreshToken = tokenStorage.getRefresh();
 
       if (!refreshToken) {
-        tokenStorage.clear();
-        window.location.href = "/login";
+        useAuthStore.getState().logout();
         return Promise.reject(error);
       }
 
@@ -38,12 +36,11 @@ api.interceptors.response.use(
           `${import.meta.env.VITE_API_URL ?? "http://localhost:3000"}/auth/refresh`,
           { refresh_token: refreshToken },
         );
-        tokenStorage.setAccess(data.access_token);
+        useAuthStore.getState().setTokens(data.access_token, refreshToken);
         original.headers.Authorization = `Bearer ${data.access_token}`;
-        return api(original); // retry original request
+        return api(original);
       } catch {
-        tokenStorage.clear();
-        window.location.href = "/login";
+        useAuthStore.getState().logout();
         return Promise.reject(error);
       }
     }
