@@ -17,12 +17,25 @@ import {
 import type { Device } from "../../types/device.types";
 import { useDeviceModal } from "../../hooks/useDeviceModal";
 import { useState } from "react";
+import { useDeviceFilters } from "../../hooks/useDeviceFilters";
+import { DeviceFilters } from "../../components/devices/DeviceFilters";
 
 export function DevicesPage() {
   const { open, selectedDevice, openCreate, openEdit, onClose } =
     useDeviceModal();
+  const {
+    name,
+    status,
+    isActive,
+    filters,
+    hasFilters,
+    setName,
+    setStatus,
+    setIsActive,
+    resetFilters,
+  } = useDeviceFilters();
   const { data, isLoading, isError, page, totalPages, nextPage, prevPage } =
-    useDevices();
+    useDevices(filters);
   const { mutate: activate, isPending: isActivating } = useActivateDevice();
   const { mutate: deactivate, isPending: isDeactivating } =
     useDeactivateDevice();
@@ -48,6 +61,16 @@ export function DevicesPage() {
           + New Device
         </Button>
       </HStack>
+      <DeviceFilters
+        name={name}
+        status={status}
+        isActive={isActive}
+        hasFilters={hasFilters}
+        onNameChange={setName}
+        onStatusChange={setStatus}
+        onIsActiveChange={setIsActive}
+        onReset={resetFilters}
+      />
 
       {isError && (
         <Box bg="red.50" color="red.600" px={4} py={3} rounded="md" mb={4}>
