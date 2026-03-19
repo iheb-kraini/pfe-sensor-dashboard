@@ -19,8 +19,11 @@ import { useDeviceModal } from "../../hooks/useDeviceModal";
 import { useState } from "react";
 import { useDeviceFilters } from "../../hooks/useDeviceFilters";
 import { DeviceFilters } from "../../components/devices/DeviceFilters";
+import { useNavigate } from "react-router-dom";
 
 export function DevicesPage() {
+  const navigate = useNavigate();
+
   const { open, selectedDevice, openCreate, openEdit, onClose } =
     useDeviceModal();
   const {
@@ -174,6 +177,16 @@ export function DevicesPage() {
                       onClick={() => handleCopy(device)}
                     >
                       {copiedId === device.id ? "Copied!" : "Copy Key"}
+                    </Button>
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      colorPalette="teal"
+                      onClick={() =>
+                        navigate(`/devices/${device.id}/sensor-windows`)
+                      }
+                    >
+                      View Data
                     </Button>
                   </HStack>
                 </Table.Cell>
