@@ -5,6 +5,8 @@ import { LoginPage } from "./pages/auth/LoginPage";
 import { ProtectedRoute } from "./components/shared/ProtectedRoute";
 import { AppShell } from "./components/layout/AppShell";
 import { DevicesPage } from "./pages/devices/DevicesPage";
+import { ProfilePage } from "./pages/profile/ProfilePage";
+import { SensorWindowsPage } from "./pages/sensor-windows/SensorWindowsPage";
 
 export default function App() {
   return (
@@ -15,13 +17,13 @@ export default function App() {
           <Route element={<AppShell />}>
             <Route path="/" element={<Navigate to="/devices" replace />} />
             <Route path="/devices" element={<DevicesPage />} />
-            {/* <Route path="/sensor-windows" element={<SensorWindowsPage />} /> */}
+            <Route
+              path="/devices/:deviceId/sensor-windows"
+              element={<SensorWindowsPage />}
+            />
             <Route path="/" element={<Navigate to="/devices" replace />} />
 
-            <Route
-              path="/profile"
-              element={<div>Profile page coming soon</div>}
-            />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/admin" element={<div>Admin page coming soon</div>} />
           </Route>
         </Route>

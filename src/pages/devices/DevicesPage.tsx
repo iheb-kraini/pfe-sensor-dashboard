@@ -7,7 +7,6 @@ import {
   Table,
   Text,
 } from "@chakra-ui/react";
-import { useState } from "react";
 import { DeviceFormModal } from "../../components/devices/DeviceFormModal";
 import {
   useActivateDevice,
@@ -16,38 +15,46 @@ import {
   useRefreshApiKey,
 } from "../../hooks/useDevices";
 import type { Device } from "../../types/device.types";
+import { useDeviceModal } from "../../hooks/useDeviceModal";
+import { useState } from "react";
+import { useDeviceFilters } from "../../hooks/useDeviceFilters";
+import { DeviceFilters } from "../../components/devices/DeviceFilters";
+import { useNavigate } from "react-router-dom";
 
 export function DevicesPage() {
-  const [page, setPage] = useState(1);
-  //lot model logic here can we create hook for it ?
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedDevice, setSelectedDevice] = useState<Device | undefined>();
-  //can we add page to useDevices hook  ?
-  const { data, isLoading, isError } = useDevices({ page, limit: 10 });
+  const navigate = useNavigate();
+
+  const { open, selectedDevice, openCreate, openEdit, onClose } =
+    useDeviceModal();
+  const {
+    name,
+    status,
+    isActive,
+    filters,
+    hasFilters,
+    setName,
+    setStatus,
+    setIsActive,
+    resetFilters,
+  } = useDeviceFilters();
+  const { data, isLoading, isError, page, totalPages, nextPage, prevPage } =
+    useDevices(filters);
   const { mutate: activate, isPending: isActivating } = useActivateDevice();
   const { mutate: deactivate, isPending: isDeactivating } =
     useDeactivateDevice();
   const { mutate: refreshApiKey, isPending: isRefreshing } = useRefreshApiKey();
 
-  const openCreate = () => {
-    setSelectedDevice(undefined);
-    setModalOpen(true);
-  };
-
-  const openEdit = (device: Device) => {
-    setSelectedDevice(device);
-    setModalOpen(true);
-  };
-
   const handleToggleActive = (device: Device) => {
-    if (device.isActive) {
-      deactivate(device.id);
-    } else {
-      activate(device.id);
-    }
+    device.isActive ? deactivate(device.id) : activate(device.id);
   };
 
-  const totalPages = data ? Math.ceil(data.total / 10) : 1;
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+
+  const handleCopy = (device: Device) => {
+    navigator.clipboard.writeText(device.apiKey ?? "");
+    setCopiedId(device.id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   return (
     <Box p={6}>
@@ -57,6 +64,16 @@ export function DevicesPage() {
           + New Device
         </Button>
       </HStack>
+      <DeviceFilters
+        name={name}
+        status={status}
+        isActive={isActive}
+        hasFilters={hasFilters}
+        onNameChange={setName}
+        onStatusChange={setStatus}
+        onIsActiveChange={setIsActive}
+        onReset={resetFilters}
+      />
 
       {isError && (
         <Box bg="red.50" color="red.600" px={4} py={3} rounded="md" mb={4}>
@@ -153,6 +170,24 @@ export function DevicesPage() {
                     >
                       Refresh Key
                     </Button>
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      colorPalette={copiedId === device.id ? "green" : "orange"}
+                      onClick={() => handleCopy(device)}
+                    >
+                      {copiedId === device.id ? "Copied!" : "Copy Key"}
+                    </Button>
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      colorPalette="teal"
+                      onClick={() =>
+                        navigate(`/devices/${device.id}/sensor-windows`)
+                      }
+                    >
+                      View Data
+                    </Button>
                   </HStack>
                 </Table.Cell>
               </Table.Row>
@@ -161,14 +196,13 @@ export function DevicesPage() {
         </Table.Body>
       </Table.Root>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <HStack justify="center" mt={4} gap={2}>
           <Button
             size="sm"
             variant="outline"
             disabled={page === 1}
-            onClick={() => setPage((p) => p - 1)}
+            onClick={prevPage}
           >
             Previous
           </Button>
@@ -179,18 +213,14 @@ export function DevicesPage() {
             size="sm"
             variant="outline"
             disabled={page === totalPages}
-            onClick={() => setPage((p) => p + 1)}
+            onClick={nextPage}
           >
             Next
           </Button>
         </HStack>
       )}
 
-      <DeviceFormModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        device={selectedDevice}
-      />
+      <DeviceFormModal open={open} onClose={onClose} device={selectedDevice} />
     </Box>
   );
 }
