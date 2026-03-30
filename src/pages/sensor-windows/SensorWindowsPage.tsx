@@ -5,14 +5,25 @@ import {
   Heading,
   HStack,
   Stack,
-  Table,
   Text,
   Input,
 } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSensorWindows } from "../../hooks/useSensorWindows";
 import { useDevice } from "../../hooks/useDevices";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+
+const SAMPLE_RATE_HZ = 500;
 
 export function SensorWindowsPage() {
   const { deviceId } = useParams<{ deviceId: string }>();
@@ -32,6 +43,53 @@ export function SensorWindowsPage() {
       deviceId: id,
       ...appliedFilters,
     });
+
+  // ── Build unified chart data ────────────────────────────────────────────────
+  // Each data point: { time: number (ms epoch), x: number, y: number, z: number }
+  // Missing samples default to 0.
+  const chartData = useMemo(() => {
+    if (!data?.data) return [];
+
+    const points: { time: number; x: number; y: number; z: number }[] = [];
+
+    for (const window of data.data) {
+      const windowStart = new Date(window.recordedAt).getTime();
+      const msBetweenSamples = 1000 / SAMPLE_RATE_HZ; // 2ms per sample
+
+      for (let i = 0; i < Math.max(window.samples.length, 1); i++) {
+        const sample = window.samples[i];
+        points.push({
+          time: windowStart + i * msBetweenSamples,
+          x: sample?.x ?? 0,
+          y: sample?.y ?? 0,
+          z: sample?.z ?? 0,
+        });
+      }
+    }
+
+    // Sort chronologically in case windows are out of order
+    points.sort((a, b) => a.time - b.time);
+
+    return points;
+  }, [data]);
+
+  // ── X-axis tick formatter ───────────────────────────────────────────────────
+  const formatTime = (ms: number) => {
+    const d = new Date(ms);
+    return `${d.getHours().toString().padStart(2, "0")}:${d
+      .getMinutes()
+      .toString()
+      .padStart(
+        2,
+        "0",
+      )}:${d.getSeconds().toString().padStart(2, "0")}.${Math.floor(
+      d.getMilliseconds() / 10,
+    )
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  const formatTooltipTime = (ms: number) => new Date(ms).toISOString();
 
   const handleApplyFilters = () => {
     setAppliedFilters({
@@ -72,7 +130,7 @@ export function SensorWindowsPage() {
       </HStack>
 
       {/* Filters */}
-      <HStack mb={4} gap={3} flexWrap="wrap">
+      <HStack mb={6} gap={3} flexWrap="wrap">
         <Stack gap={1}>
           <Text fontSize="xs" color="gray.500" fontWeight="medium">
             From
@@ -124,73 +182,101 @@ export function SensorWindowsPage() {
         </Box>
       )}
 
-      <Table.Root variant="outline" rounded="md">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader>Recorded At</Table.ColumnHeader>
-            <Table.ColumnHeader>GPS Synced</Table.ColumnHeader>
-            <Table.ColumnHeader>Lat</Table.ColumnHeader>
-            <Table.ColumnHeader>Lon</Table.ColumnHeader>
-            <Table.ColumnHeader>Speed (km/h)</Table.ColumnHeader>
-            <Table.ColumnHeader>Satellites</Table.ColumnHeader>
-            <Table.ColumnHeader>Samples</Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {isLoading ? (
-            <Table.Row>
-              <Table.Cell
-                colSpan={7}
-                textAlign="center"
-                py={8}
-                color="gray.400"
-              >
-                Loading...
-              </Table.Cell>
-            </Table.Row>
-          ) : data?.data.length === 0 ? (
-            <Table.Row>
-              <Table.Cell
-                colSpan={7}
-                textAlign="center"
-                py={8}
-                color="gray.400"
-              >
-                No sensor data found
-              </Table.Cell>
-            </Table.Row>
-          ) : (
-            data?.data.map((window) => (
-              <Table.Row key={window.id}>
-                <Table.Cell fontSize="sm">
-                  {new Date(window.recordedAt).toLocaleString()}
-                </Table.Cell>
-                <Table.Cell>
-                  <Badge colorPalette={window.gpsSynced ? "green" : "gray"}>
-                    {window.gpsSynced ? "Synced" : "No GPS"}
-                  </Badge>
-                </Table.Cell>
-                <Table.Cell color="gray.500" fontSize="sm">
-                  {window.lat ?? "—"}
-                </Table.Cell>
-                <Table.Cell color="gray.500" fontSize="sm">
-                  {window.lon ?? "—"}
-                </Table.Cell>
-                <Table.Cell color="gray.500" fontSize="sm">
-                  {window.speedKmph ?? "—"}
-                </Table.Cell>
-                <Table.Cell color="gray.500" fontSize="sm">
-                  {window.satellites ?? "—"}
-                </Table.Cell>
-                <Table.Cell color="gray.500" fontSize="sm">
-                  {window.samples.length} samples
-                </Table.Cell>
-              </Table.Row>
-            ))
-          )}
-        </Table.Body>
-      </Table.Root>
+      {/* Summary badges */}
+      {data && (
+        <HStack mb={4} gap={3} flexWrap="wrap">
+          <Badge colorPalette="blue">{data.data.length} windows</Badge>
+          <Badge colorPalette="gray">{chartData.length} samples total</Badge>
+        </HStack>
+      )}
 
+      {/* Chart */}
+      <Box
+        bg="white"
+        rounded="lg"
+        shadow="sm"
+        border="1px solid"
+        borderColor="gray.200"
+        p={4}
+        mb={6}
+      >
+        {isLoading ? (
+          <Box textAlign="center" py={16} color="gray.400">
+            Loading...
+          </Box>
+        ) : chartData.length === 0 ? (
+          <Box textAlign="center" py={16} color="gray.400">
+            No sensor data found
+          </Box>
+        ) : (
+          <ResponsiveContainer width="100%" height={420}>
+            <LineChart
+              data={chartData}
+              margin={{ top: 8, right: 24, left: 0, bottom: 8 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis
+                dataKey="time"
+                type="number"
+                domain={["dataMin", "dataMax"]}
+                scale="time"
+                tickFormatter={formatTime}
+                tick={{ fontSize: 11 }}
+                minTickGap={80}
+              />
+              <YAxis
+                tick={{ fontSize: 11 }}
+                label={{
+                  value: "m/s²",
+                  angle: -90,
+                  position: "insideLeft",
+                  offset: 10,
+                  style: { fontSize: 11, fill: "#888" },
+                }}
+              />
+              <Tooltip
+                labelFormatter={(label) => formatTooltipTime(Number(label))}
+                formatter={(value, name) => [
+                  `${Number(value).toFixed(4)} m/s²`,
+                  String(name).toUpperCase(),
+                ]}
+                contentStyle={{ fontSize: 12 }}
+              />
+              <Legend
+                formatter={(value) => value.toUpperCase()}
+                wrapperStyle={{ fontSize: 13 }}
+              />
+              {/* dot={false} is critical for performance with 500+ points */}
+              <Line
+                type="monotone"
+                dataKey="x"
+                stroke="#3B82F6"
+                strokeWidth={1.5}
+                dot={false}
+                activeDot={{ r: 3 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="y"
+                stroke="#10B981"
+                strokeWidth={1.5}
+                dot={false}
+                activeDot={{ r: 3 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="z"
+                stroke="#F59E0B"
+                strokeWidth={1.5}
+                dot={false}
+                activeDot={{ r: 3 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </Box>
+
+      {/* Pagination */}
       {totalPages > 1 && (
         <HStack justify="center" mt={4} gap={2}>
           <Button

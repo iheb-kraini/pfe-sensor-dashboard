@@ -1,3 +1,9 @@
+export interface AccelSample {
+  x: number;
+  y: number;
+  z: number;
+}
+
 export interface SensorWindow {
   id: number;
   recordedAt: string;
@@ -6,7 +12,7 @@ export interface SensorWindow {
   speedKmph: number | null;
   satellites: number | null;
   gpsSynced: boolean;
-  samples: number[];
+  samples: AccelSample[];
 }
 
 export interface SensorWindowsResponse {
