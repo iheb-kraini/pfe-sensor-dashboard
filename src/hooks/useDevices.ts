@@ -5,6 +5,7 @@ import type {
   DeviceQuery,
   UpdateDeviceDto,
 } from "../types/device.types";
+import { useEffect, useState } from "react";
 
 export const deviceKeys = {
   all: ["devices"] as const,
@@ -12,11 +13,32 @@ export const deviceKeys = {
   detail: (id: number) => [...deviceKeys.all, "detail", id] as const,
 };
 
-export function useDevices(query?: DeviceQuery) {
-  return useQuery({
+const LIMIT = 10;
+
+export function useDevices(filters: DeviceQuery = {}) {
+  const [page, setPage] = useState(1);
+
+  // reset to page 1 whenever filters change
+  useEffect(() => {
+    setPage(1);
+  }, [filters.name, filters.status, filters.isActive]);
+
+  const query = { ...filters, page, limit: LIMIT };
+
+  const result = useQuery({
     queryKey: deviceKeys.list(query),
     queryFn: () => devicesApi.findAll(query),
   });
+
+  const totalPages = result.data ? Math.ceil(result.data.total / LIMIT) : 1;
+
+  return {
+    ...result,
+    page,
+    totalPages,
+    nextPage: () => setPage((p) => Math.min(p + 1, totalPages)),
+    prevPage: () => setPage((p) => Math.max(p - 1, 1)),
+  };
 }
 
 export function useDevice(id: number) {
