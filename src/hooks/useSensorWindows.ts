@@ -14,13 +14,14 @@ export const sensorWindowKeys = {
 
 export function useSensorWindows(filters: SensorWindowsQuery = {}) {
   const [page, setPage] = useState(1);
+  const limit = filters.limit ?? LIMIT;
 
   // reset to page 1 whenever filters change
   useEffect(() => {
     setPage(1);
-  }, [filters.deviceId, filters.from, filters.to]);
+  }, [filters.deviceId, filters.from, filters.to, limit]);
 
-  const query = { ...filters, page, limit: LIMIT };
+  const query = { ...filters, page, limit };
 
   const result = useQuery({
     queryKey: sensorWindowKeys.list(query),
@@ -30,7 +31,7 @@ export function useSensorWindows(filters: SensorWindowsQuery = {}) {
     enabled: !!filters.deviceId, // don't fetch until a device is selected
   });
 
-  const totalPages = result.data ? Math.ceil(result.data.total / LIMIT) : 1;
+  const totalPages = result.data ? Math.ceil(result.data.total / limit) : 1;
 
   return {
     ...result,

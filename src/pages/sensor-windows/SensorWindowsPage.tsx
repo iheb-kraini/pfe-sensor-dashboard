@@ -9,7 +9,7 @@ import {
   Input,
 } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useSensorWindows } from "../../hooks/useSensorWindows";
 import { useDevice } from "../../hooks/useDevices";
 import {
@@ -23,9 +23,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const SAMPLE_RATE_HZ = 500;
-
 type ParsedSample = { x: number; y: number; z: number };
+
+const BUCKET_MINUTES = 2;
+const RANGE_LIMIT = 2000;
 
 const toNumber = (value: unknown): number | null => {
   if (typeof value === "number") {
@@ -73,24 +74,31 @@ const computeWindowMetrics = (samples: ParsedSample[]) => {
   const meanY = sumY / samples.length;
   const meanZ = sumZ / samples.length;
 
-  let sumMagSq = 0;
-  let minMag = Number.POSITIVE_INFINITY;
-  let maxMag = Number.NEGATIVE_INFINITY;
+  let sumSqX = 0;
+  let sumSqY = 0;
+  let sumSqZ = 0;
 
   for (const s of samples) {
     const dx = s.x - meanX;
     const dy = s.y - meanY;
     const dz = s.z - meanZ;
-    const mag = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    sumMagSq += mag * mag;
-    if (mag < minMag) minMag = mag;
-    if (mag > maxMag) maxMag = mag;
+    sumSqX += dx * dx;
+    sumSqY += dy * dy;
+    sumSqZ += dz * dz;
   }
 
-  const rms = Math.sqrt(sumMagSq / samples.length);
-  const p2p = maxMag - minMag;
+  const rmsX = Math.sqrt(sumSqX / samples.length);
+  const rmsY = Math.sqrt(sumSqY / samples.length);
+  const rmsZ = Math.sqrt(sumSqZ / samples.length);
 
-  return { rms, p2p };
+  return { rmsX, rmsY, rmsZ };
+};
+
+const formatDateTimeLocal = (date: Date) => {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+    date.getDate(),
+  )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
 export function SensorWindowsPage() {
@@ -100,7 +108,7 @@ export function SensorWindowsPage() {
 
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [chartMode, setChartMode] = useState<"metrics" | "raw">("metrics");
+  const [rangeHours, setRangeHours] = useState<12 | 24>(24);
   const [appliedFilters, setAppliedFilters] = useState<{
     from?: string;
     to?: string;
@@ -111,73 +119,16 @@ export function SensorWindowsPage() {
     useSensorWindows({
       deviceId: id,
       ...appliedFilters,
+      limit: RANGE_LIMIT,
     });
 
-  // ── Build unified chart data ────────────────────────────────────────────────
-  // Each data point: { time: number (ms epoch), x: number | null, y: number | null, z: number | null }
-  // Missing samples default to null so gaps don't connect.
-  const MAX_WINDOWS = 10;
-  const MAX_TOTAL_POINTS = 1000;
-
-  const chartData = useMemo(() => {
-    if (!data?.data) return [];
-
-    // cap to most recent MAX_WINDOWS windows
-    const windows = data.data.slice(-MAX_WINDOWS);
-
-    const points: {
-      time: number;
-      x: number | null;
-      y: number | null;
-      z: number | null;
-    }[] = [];
-    let validCount = 0;
-
-    for (let w = 0; w < windows.length; w++) {
-      const window = windows[w];
-      const windowStart = new Date(window.recordedAt).getTime();
-      const msBetweenSamples = 1000 / SAMPLE_RATE_HZ;
-
-      for (let i = 0; i < window.samples.length; i++) {
-        const sample = normalizeSample(window.samples[i]);
-        if (sample) validCount += 1;
-        points.push({
-          time: windowStart + i * msBetweenSamples,
-          x: sample?.x ?? null,
-          y: sample?.y ?? null,
-          z: sample?.z ?? null,
-        });
-      }
-
-      if (w < windows.length - 1) {
-        points.push({
-          time: windowStart + window.samples.length * msBetweenSamples + 1,
-          x: null,
-          y: null,
-          z: null,
-        });
-      }
-    }
-
-    points.sort((a, b) => a.time - b.time);
-
-    if (validCount === 0) return [];
-
-    // downsample — keep every Nth point so total stays under MAX_TOTAL_POINTS
-    if (points.length > MAX_TOTAL_POINTS) {
-      const step = Math.ceil(points.length / MAX_TOTAL_POINTS);
-      return points.filter((_, i) => i % step === 0);
-    }
-
-    return points;
-  }, [data]);
-
+  // Build 2-minute RMS-per-axis buckets for trend view.
   const metricsData = useMemo(() => {
     if (!data?.data) return [];
 
     const buckets = new Map<
       number,
-      { rmsSum: number; p2pSum: number; count: number }
+      { rmsXSum: number; rmsYSum: number; rmsZSum: number; count: number }
     >();
 
     for (const window of data.data) {
@@ -189,12 +140,20 @@ export function SensorWindowsPage() {
       if (!metrics) continue;
 
       const bucketDate = new Date(window.recordedAt);
-      bucketDate.setMinutes(0, 0, 0);
+      const bucketMinute =
+        Math.floor(bucketDate.getMinutes() / BUCKET_MINUTES) * BUCKET_MINUTES;
+      bucketDate.setMinutes(bucketMinute, 0, 0);
       const key = bucketDate.getTime();
 
-      const bucket = buckets.get(key) ?? { rmsSum: 0, p2pSum: 0, count: 0 };
-      bucket.rmsSum += metrics.rms;
-      bucket.p2pSum += metrics.p2p;
+      const bucket = buckets.get(key) ?? {
+        rmsXSum: 0,
+        rmsYSum: 0,
+        rmsZSum: 0,
+        count: 0,
+      };
+      bucket.rmsXSum += metrics.rmsX;
+      bucket.rmsYSum += metrics.rmsY;
+      bucket.rmsZSum += metrics.rmsZ;
       bucket.count += 1;
       buckets.set(key, bucket);
     }
@@ -202,42 +161,41 @@ export function SensorWindowsPage() {
     return Array.from(buckets.entries())
       .map(([time, bucket]) => ({
         time,
-        rms: bucket.rmsSum / bucket.count,
-        p2p: bucket.p2pSum / bucket.count,
+        rmsX: bucket.rmsXSum / bucket.count,
+        rmsY: bucket.rmsYSum / bucket.count,
+        rmsZ: bucket.rmsZSum / bucket.count,
         count: bucket.count,
       }))
       .sort((a, b) => a.time - b.time);
   }, [data]);
 
-  const rawSampleCount = useMemo(() => {
-    if (!data?.data) return 0;
-    return data.data.reduce((sum, window) => sum + window.samples.length, 0);
-  }, [data]);
-  // ── X-axis tick formatter ───────────────────────────────────────────────────
-  const formatTime = (ms: number) => {
-    const d = new Date(ms);
-    return `${d.getHours().toString().padStart(2, "0")}:${d
-      .getMinutes()
-      .toString()
-      .padStart(
-        2,
-        "0",
-      )}:${d.getSeconds().toString().padStart(2, "0")}.${Math.floor(
-      d.getMilliseconds() / 10,
-    )
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
-  const formatHour = (ms: number) => {
+  const formatBucketTime = (ms: number) => {
     const d = new Date(ms);
     const month = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     const hour = String(d.getHours()).padStart(2, "0");
-    return `${month}/${day} ${hour}:00`;
+    const minute = String(d.getMinutes()).padStart(2, "0");
+    return `${month}/${day} ${hour}:${minute}`;
   };
 
   const formatTooltipTime = (ms: number) => new Date(ms).toISOString();
+
+  const applyRange = useCallback((hours: 12 | 24) => {
+    const now = new Date();
+    const fromDate = new Date(now.getTime() - hours * 60 * 60 * 1000);
+    const nextFrom = formatDateTimeLocal(fromDate);
+    const nextTo = formatDateTimeLocal(now);
+    setFrom(nextFrom);
+    setTo(nextTo);
+    setAppliedFilters({
+      from: nextFrom,
+      to: nextTo,
+    });
+  }, []);
+
+  useEffect(() => {
+    applyRange(rangeHours);
+  }, [applyRange, rangeHours]);
 
   const handleApplyFilters = () => {
     setAppliedFilters({
@@ -247,9 +205,7 @@ export function SensorWindowsPage() {
   };
 
   const handleResetFilters = () => {
-    setFrom("");
-    setTo("");
-    setAppliedFilters({});
+    applyRange(rangeHours);
   };
 
   const hasFilters = !!appliedFilters.from || !!appliedFilters.to;
@@ -334,33 +290,32 @@ export function SensorWindowsPage() {
       {data && (
         <HStack mb={4} gap={3} flexWrap="wrap">
           <Badge colorPalette="blue">{data.data.length} windows</Badge>
-          {chartMode === "raw" ? (
-            <Badge colorPalette="gray">{rawSampleCount} samples total</Badge>
-          ) : (
-            <Badge colorPalette="gray">{metricsData.length} hours</Badge>
-          )}
+          <Badge colorPalette="gray">
+            {metricsData.length} buckets ({BUCKET_MINUTES}-min, last{" "}
+            {rangeHours}h)
+          </Badge>
         </HStack>
       )}
 
       {data && (
         <HStack mb={4} gap={2} flexWrap="wrap">
           <Text fontSize="sm" color="gray.500">
-            View
+            Range
           </Text>
           <Button
             size="xs"
-            variant={chartMode === "metrics" ? "solid" : "outline"}
+            variant={rangeHours === 24 ? "solid" : "outline"}
             colorPalette="blue"
-            onClick={() => setChartMode("metrics")}
+            onClick={() => setRangeHours(24)}
           >
-            Hourly RMS/P2P
+            24h
           </Button>
           <Button
             size="xs"
-            variant={chartMode === "raw" ? "solid" : "outline"}
-            onClick={() => setChartMode("raw")}
+            variant={rangeHours === 12 ? "solid" : "outline"}
+            onClick={() => setRangeHours(12)}
           >
-            Raw waveform
+            12h
           </Button>
         </HStack>
       )}
@@ -379,146 +334,74 @@ export function SensorWindowsPage() {
           <Box textAlign="center" py={16} color="gray.400">
             Loading...
           </Box>
+        ) : metricsData.length === 0 ? (
+          <Box textAlign="center" py={16} color="gray.400">
+            No metric data found
+          </Box>
         ) : (
-          <>
-            {chartMode === "metrics" ? (
-              metricsData.length === 0 ? (
-                <Box textAlign="center" py={16} color="gray.400">
-                  No metric data found
-                </Box>
-              ) : (
-                <ResponsiveContainer width="100%" height={380}>
-                  <LineChart
-                    data={metricsData}
-                    margin={{ top: 8, right: 24, left: 0, bottom: 8 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis
-                      dataKey="time"
-                      type="number"
-                      domain={["dataMin", "dataMax"]}
-                      scale="time"
-                      tickFormatter={formatHour}
-                      tick={{ fontSize: 11 }}
-                      minTickGap={80}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 11 }}
-                      label={{
-                        value: "m/s^2",
-                        angle: -90,
-                        position: "insideLeft",
-                        offset: 10,
-                        style: { fontSize: 11, fill: "#888" },
-                      }}
-                    />
-                    <Tooltip
-                      labelFormatter={(label) =>
-                        formatTooltipTime(Number(label))
-                      }
-                      formatter={(value, name) => [
-                        `${Number(value).toFixed(4)} m/s^2`,
-                        String(name).toUpperCase(),
-                      ]}
-                      contentStyle={{ fontSize: 12 }}
-                    />
-                    <Legend
-                      formatter={(value) => value.toUpperCase()}
-                      wrapperStyle={{ fontSize: 13 }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="rms"
-                      stroke="#3B82F6"
-                      strokeWidth={1.5}
-                      dot={false}
-                      activeDot={{ r: 3 }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="p2p"
-                      stroke="#F59E0B"
-                      strokeWidth={1.5}
-                      dot={false}
-                      activeDot={{ r: 3 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              )
-            ) : chartData.length === 0 ? (
-              <Box textAlign="center" py={16} color="gray.400">
-                No sensor data found
-              </Box>
-            ) : (
-              <ResponsiveContainer width="100%" height={420}>
-                <LineChart
-                  data={chartData}
-                  margin={{ top: 8, right: 24, left: 0, bottom: 8 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis
-                    dataKey="time"
-                    type="number"
-                    domain={["dataMin", "dataMax"]}
-                    scale="time"
-                    tickFormatter={formatTime}
-                    tick={{ fontSize: 11 }}
-                    minTickGap={80}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11 }}
-                    label={{
-                      value: "m/s^2",
-                      angle: -90,
-                      position: "insideLeft",
-                      offset: 10,
-                      style: { fontSize: 11, fill: "#888" },
-                    }}
-                  />
-                  <Tooltip
-                    labelFormatter={(label) => formatTooltipTime(Number(label))}
-                    formatter={(value, name) => [
-                      `${Number(value).toFixed(4)} m/s^2`,
-                      String(name).toUpperCase(),
-                    ]}
-                    contentStyle={{ fontSize: 12 }}
-                  />
-                  <Legend
-                    formatter={(value) => value.toUpperCase()}
-                    wrapperStyle={{ fontSize: 13 }}
-                  />
-                  {/* dot={false} is critical for performance with 500+ points */}
-                  <Line
-                    type="monotone"
-                    dataKey="x"
-                    stroke="#3B82F6"
-                    strokeWidth={1.5}
-                    dot={false}
-                    activeDot={{ r: 3 }}
-                    connectNulls={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="y"
-                    stroke="#10B981"
-                    strokeWidth={1.5}
-                    dot={false}
-                    activeDot={{ r: 3 }}
-                    connectNulls={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="z"
-                    stroke="#F59E0B"
-                    strokeWidth={1.5}
-                    dot={false}
-                    activeDot={{ r: 3 }}
-                    connectNulls={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </>
+          <ResponsiveContainer width="100%" height={380}>
+            <LineChart
+              data={metricsData}
+              margin={{ top: 8, right: 24, left: 0, bottom: 8 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis
+                dataKey="time"
+                type="number"
+                domain={["dataMin", "dataMax"]}
+                scale="time"
+                tickFormatter={formatBucketTime}
+                tick={{ fontSize: 11 }}
+                minTickGap={80}
+              />
+              <YAxis
+                tick={{ fontSize: 11 }}
+                label={{
+                  value: "m/s^2",
+                  angle: -90,
+                  position: "insideLeft",
+                  offset: 10,
+                  style: { fontSize: 11, fill: "#888" },
+                }}
+              />
+              <Tooltip
+                labelFormatter={(label) => formatTooltipTime(Number(label))}
+                formatter={(value, name) => [
+                  `${Number(value).toFixed(4)} m/s^2`,
+                  String(name).toUpperCase(),
+                ]}
+                contentStyle={{ fontSize: 12 }}
+              />
+              <Legend
+                formatter={(value) => value.toUpperCase()}
+                wrapperStyle={{ fontSize: 13 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="rmsX"
+                stroke="#3B82F6"
+                strokeWidth={1.5}
+                dot={false}
+                activeDot={{ r: 3 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="rmsY"
+                stroke="#10B981"
+                strokeWidth={1.5}
+                dot={false}
+                activeDot={{ r: 3 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="rmsZ"
+                stroke="#F59E0B"
+                strokeWidth={1.5}
+                dot={false}
+                activeDot={{ r: 3 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         )}
       </Box>
 
