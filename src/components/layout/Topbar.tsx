@@ -1,6 +1,7 @@
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import { useAuthStore } from "../../store/auth.store";
 import { useLogout } from "../../hooks/useAuth";
+import { NotificationBell } from "../notifications/NotificationBell";
 
 export function Topbar() {
   const user = useAuthStore((s) => s.user);
@@ -16,7 +17,6 @@ export function Topbar() {
       flexShrink={0}
     >
       <Flex h="full" align="center" justify="space-between">
-        {/* Greeting */}
         <Text fontSize="sm" color="gray.600">
           Welcome back,{" "}
           <Text as="span" fontWeight="semibold" color="gray.800">
@@ -24,7 +24,6 @@ export function Topbar() {
           </Text>
         </Text>
 
-        {/* Right side */}
         <Flex align="center" gap={4}>
           <Box
             px={2}
@@ -38,6 +37,7 @@ export function Topbar() {
           >
             {user?.role}
           </Box>
+          <NotificationBell /> {/* ← added */}
           <Button size="sm" variant="ghost" colorPalette="red" onClick={logout}>
             Sign out
           </Button>
