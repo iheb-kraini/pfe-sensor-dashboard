@@ -31,7 +31,7 @@ export interface Notification {
   createdAt: string;
   resolvedAt: string | null;
   device?: { id: number; name: string };
-  sensorWindowId: number;
+  sensorWindowId?: number;
   sensorWindow: SensorWindow;
 }
 

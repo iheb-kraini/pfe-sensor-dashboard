@@ -8,6 +8,7 @@ import { DevicesPage } from "./pages/devices/DevicesPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
 import { SensorWindowsPage } from "./pages/sensor-windows/SensorWindowsPage";
 import { AdminPage } from "./pages/stat/adminPage";
+import { NotificationsPage } from "./pages/notification/Notificationspage";
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="/" element={<Navigate to="/devices" replace />} />
 
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/admin" element={<AdminPage />} />
           </Route>
         </Route>
