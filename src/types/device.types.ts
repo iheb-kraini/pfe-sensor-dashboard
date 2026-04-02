@@ -22,9 +22,7 @@ export interface Device {
 
 export interface DevicesResponse {
   data: Device[];
-  total: number;
-  page: number;
-  limit: number;
+  meta: { total: number; page: number; limit: number };
 }
 
 export interface DeviceQuery {
