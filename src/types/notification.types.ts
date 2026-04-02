@@ -1,3 +1,5 @@
+import type { SensorWindow } from "./sensorWindow.types";
+
 export const NotificationState = {
   UNREAD: "unread",
   IN_INVESTIGATION: "in_investigation",
@@ -29,6 +31,8 @@ export interface Notification {
   createdAt: string;
   resolvedAt: string | null;
   device?: { id: number; name: string };
+  sensorWindowId: number;
+  sensorWindow: SensorWindow;
 }
 
 export interface NotificationFilters {

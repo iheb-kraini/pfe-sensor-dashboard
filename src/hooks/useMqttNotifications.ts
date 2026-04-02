@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import mqtt from "mqtt";
 import type { MqttClient } from "mqtt";
 import { useNotificationStore } from "../store/notification.store";
@@ -10,20 +10,30 @@ import { toaster } from "../components/ui/toaster";
 
 const BROKER_URL = "ws://192.168.1.23:9001";
 
-// outside component — survives StrictMode remount
-let client: MqttClient | null = null;
-
 export function useMqttNotifications() {
   const { user, isAdmin } = useAuthStore();
+  const clientRef = useRef<MqttClient | null>(null);
 
   useEffect(() => {
     const token = tokenStorage.getAccess();
-    if (!user || !token) return;
-    if (client?.connected) return; // already connected, skip
+    if (!user || !token) {
+      // Disconnect if exists
+      if (clientRef.current) {
+        clientRef.current.end(true);
+        clientRef.current = null;
+      }
+      return;
+    }
+
+    // Disconnect existing client before creating new one (e.g., token refresh)
+    if (clientRef.current) {
+      clientRef.current.end(true);
+      clientRef.current = null;
+    }
 
     const topic = isAdmin() ? "users/#" : `users/${user.id}/devices/#`;
 
-    client = mqtt.connect(BROKER_URL, {
+    const client = mqtt.connect(BROKER_URL, {
       username: String(user.id),
       password: token,
       clientId: `frontend_${user.id}_${Date.now()}`,
@@ -31,9 +41,11 @@ export function useMqttNotifications() {
       reconnectPeriod: 5000,
     });
 
+    clientRef.current = client;
+
     client.on("connect", () => {
       console.log("MQTT connected ✓ topic:", topic);
-      client!.subscribe(topic, { qos: 1 }, (err) => {
+      client.subscribe(topic, { qos: 1 }, (err) => {
         if (err) console.error("Subscribe failed:", err);
         else console.log("Subscribed to:", topic);
       });
@@ -42,9 +54,8 @@ export function useMqttNotifications() {
     client.on("message", (_topic, message) => {
       console.log("MQTT message received:", _topic, message.toString());
       try {
+        console.log(message.toString());
         const notification: Notification = JSON.parse(message.toString());
-
-        // pull fresh store reference each time
         useNotificationStore.getState().appendNotification(notification);
         playNotificationSound();
         toaster.create({
@@ -66,15 +77,12 @@ export function useMqttNotifications() {
     client.on("error", (err) => console.error("MQTT error:", err));
     client.on("close", () => console.log("MQTT connection closed"));
 
-    // no cleanup — StrictMode should not disconnect
-    return () => {};
-  }, [user?.id]);
-
-  // disconnect only on logout
-  useEffect(() => {
-    if (!user && client) {
-      client.end(true);
-      client = null;
-    }
-  }, [user]);
+    // Cleanup on unmount or before next effect run (user change)
+    return () => {
+      if (clientRef.current) {
+        clientRef.current.end(true);
+        clientRef.current = null;
+      }
+    };
+  }, [user, isAdmin]); // Depend on user and isAdmin (isAdmin will change if user changes)
 }
