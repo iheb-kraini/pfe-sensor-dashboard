@@ -13,7 +13,7 @@ export function useNotifications(filters: NotificationFilters = {}) {
   useEffect(() => {
     notificationsApi
       .getAll(filters)
-      .then((res) => setNotifications(res.data.data))
+      .then((res) => setNotifications(res.data))
       .catch(() =>
         toaster.create({
           type: "error",

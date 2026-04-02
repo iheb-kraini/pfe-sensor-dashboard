@@ -37,7 +37,7 @@ export function Topbar() {
           >
             {user?.role}
           </Box>
-          <NotificationBell /> {/* ← added */}
+          <NotificationBell />
           <Button size="sm" variant="ghost" colorPalette="red" onClick={logout}>
             Sign out
           </Button>
