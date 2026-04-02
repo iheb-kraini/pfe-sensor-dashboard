@@ -10,8 +10,12 @@ import { useNotificationStore } from "../store/notification.store";
 const LIMIT = 12;
 
 export function useNotifications(filters: NotificationFilters = {}) {
-  const { notifications, setNotifications, updateNotificationState } =
-    useNotificationStore();
+  const {
+    notifications,
+    setNotifications,
+    updateNotificationState,
+    setUnreadCount,
+  } = useNotificationStore();
 
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -20,11 +24,20 @@ export function useNotifications(filters: NotificationFilters = {}) {
 
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
+  // fetch true total unread count once — independent of pagination
+  useEffect(() => {
+    notificationsApi
+      .getAll({ state: "unread", limit: 1, page: 1 })
+      .then((res) => setUnreadCount(res.meta.total))
+      .catch(() => {});
+  }, []);
+
   // reset to page 1 when filters change
   useEffect(() => {
     setPage(1);
   }, [JSON.stringify(filters)]);
 
+  // fetch current page
   useEffect(() => {
     setIsLoading(true);
     setIsError(false);
@@ -49,6 +62,7 @@ export function useNotifications(filters: NotificationFilters = {}) {
     try {
       await notificationsApi.updateState(id, state);
       updateNotificationState(id, state);
+
       toaster.create({ type: "success", title: "Notification updated" });
     } catch {
       toaster.create({ type: "error", title: "Failed to update notification" });
