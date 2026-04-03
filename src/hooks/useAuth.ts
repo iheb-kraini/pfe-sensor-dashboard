@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { authApi } from "../api/endpoints/auth.api";
 import { useAuthStore } from "../store/auth.store";
@@ -19,9 +19,11 @@ export function useLogin() {
 export function useLogout() {
   const navigate = useNavigate();
   const logout = useAuthStore((s) => s.logout);
+  const queryClient = useQueryClient();
 
   return () => {
     logout();
+    queryClient.clear(); //clear rect query cach so when re log i don't see previous user data
     navigate("/login", { replace: true });
   };
 }
