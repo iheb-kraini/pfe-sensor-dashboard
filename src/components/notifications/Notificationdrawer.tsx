@@ -240,9 +240,7 @@ export function NotificationDrawer({
                         alignSelf="start"
                         onClick={() => {
                           onClose();
-                          navigate(
-                            `/devices/${n.deviceId}/sensor-windows?highlight=${n.sensorWindowId}`,
-                          );
+                          navigate(`/sensor-windows/${n.sensorWindowId}`);
                         }}
                       >
                         View Sensor Window →
