@@ -1,4 +1,9 @@
-import type { User, UserQuery, UsersResponse } from "../../types/user.types";
+import type {
+  CreateUserPayload,
+  User,
+  UserQuery,
+  UsersResponse,
+} from "../../types/user.types";
 import { api } from "../axios";
 
 export const usersApi = {
@@ -10,4 +15,6 @@ export const usersApi = {
 
   deactivate: (id: number) =>
     api.patch<User>(`/users/${id}/deactivate`).then((res) => res.data),
+  register: (payload: CreateUserPayload) =>
+    api.post<User>("/auth/register", payload).then((res) => res.data),
 };

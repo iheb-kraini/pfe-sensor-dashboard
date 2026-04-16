@@ -28,3 +28,12 @@ export interface UserQuery {
   page?: number;
   limit?: number;
 }
+
+// user.types.ts
+export interface CreateUserPayload {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  role?: UserRole;
+}
