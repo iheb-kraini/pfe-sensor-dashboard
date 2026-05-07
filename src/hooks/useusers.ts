@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import type { UserQuery } from "../types/User.types";
-import { usersApi } from "../api/endpoints/Users.api";
+import type { CreateUserPayload, UserQuery } from "../types/user.types";
+import { usersApi } from "../api/endpoints/users.api";
 
 export const userKeys = {
   all: ["users"] as const,
@@ -49,6 +49,17 @@ export function useDeactivateUser() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => usersApi.deactivate(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.all });
+    },
+  });
+}
+
+export function useRegisterUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: CreateUserPayload) => usersApi.register(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.all });
     },

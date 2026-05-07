@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { Box, Heading, Text } from "@chakra-ui/react";
+import { Box, Button, Heading, HStack, Text } from "@chakra-ui/react";
 import { useDebounce } from "use-debounce";
 import { useAdminStats } from "../../hooks/useAdminStats";
 import type { UserRole } from "../../types/user.types";
 import { useUsers } from "../../hooks/useusers";
 import { StatsCards } from "../../components/stats/statscards";
 import { UserFilters, UsersTable } from "../../components/Users/usersTable";
+import { useUserModal } from "../../hooks/useUserModal";
+import { UserFormModal } from "../../components/Users/UserFormModal";
 
 export function AdminPage() {
   const stats = useAdminStats();
-
+  const { open, openCreate, onClose } = useUserModal();
   // filters
   const [search, setSearch] = useState("");
   const [role, setRole] = useState<UserRole | "">("");
@@ -50,6 +52,7 @@ export function AdminPage() {
         totalDevices={stats.totalDevices}
         onlineDevices={stats.onlineDevices}
         totalAlerts={stats.totalAlerts}
+        unreadAlerts={stats.unreadAlerts}
         isLoading={stats.isLoading}
       />
 
@@ -62,9 +65,14 @@ export function AdminPage() {
         shadow="sm"
         p={5}
       >
-        <Heading size="md" mb={4}>
-          Users
-        </Heading>
+        <HStack justify="space-between" mb={6}>
+          <Heading size="md" mb={4}>
+            Users
+          </Heading>
+          <Button colorPalette="blue" onClick={openCreate}>
+            + New User
+          </Button>
+        </HStack>
 
         <UserFilters
           search={search}
@@ -87,6 +95,7 @@ export function AdminPage() {
           onPrevPage={prevPage}
         />
       </Box>
+      <UserFormModal open={open} onClose={onClose} />
     </Box>
   );
 }

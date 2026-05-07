@@ -80,6 +80,7 @@ interface Props {
   totalDevices: number;
   onlineDevices: number;
   totalAlerts: number;
+  unreadAlerts: number;
   isLoading: boolean;
 }
 
@@ -89,6 +90,7 @@ export function StatsCards({
   totalDevices,
   onlineDevices,
   totalAlerts,
+  unreadAlerts,
   isLoading,
 }: Props) {
   return (
@@ -132,6 +134,8 @@ export function StatsCards({
         icon="🔔"
         label="Total Alerts"
         value={totalAlerts}
+        sub="unopened"
+        subValue={unreadAlerts}
         accent="orange.400"
         isLoading={isLoading}
       />
