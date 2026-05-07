@@ -52,6 +52,7 @@ export function AdminPage() {
         totalDevices={stats.totalDevices}
         onlineDevices={stats.onlineDevices}
         totalAlerts={stats.totalAlerts}
+        unreadAlerts={stats.unreadAlerts}
         isLoading={stats.isLoading}
       />
 
