@@ -7,6 +7,9 @@ import { AppShell } from "./components/layout/AppShell";
 import { DevicesPage } from "./pages/devices/DevicesPage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
 import { SensorWindowsPage } from "./pages/sensor-windows/SensorWindowsPage";
+import { AdminPage } from "./pages/stat/adminPage";
+import { NotificationsPage } from "./pages/notification/Notificationspage";
+import { SensorWindowDetailPage } from "./pages/sensor-windows/Sensorwindowdetailpage";
 
 export default function App() {
   return (
@@ -21,10 +24,15 @@ export default function App() {
               path="/devices/:deviceId/sensor-windows"
               element={<SensorWindowsPage />}
             />
+            <Route
+              path="/sensor-windows/:id"
+              element={<SensorWindowDetailPage />}
+            />
             <Route path="/" element={<Navigate to="/devices" replace />} />
-
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/admin" element={<div>Admin page coming soon</div>} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+
+            <Route path="/admin" element={<AdminPage />} />
           </Route>
         </Route>
       </Routes>
