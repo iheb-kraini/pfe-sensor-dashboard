@@ -25,7 +25,7 @@ export function Sidebar() {
   return (
     <Box
       w="240px"
-      minH="100vh"
+      h={"full"}
       bg="gray.900"
       color="white"
       px={4}

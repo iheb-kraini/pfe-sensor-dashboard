@@ -7,17 +7,21 @@ import { useMqttNotifications } from "../../hooks/useMqttNotifications";
 import MobileSidebar from "./mobileDrawer";
 
 export function AppShell() {
-  useNotifications(); // initial fetch
-  useMqttNotifications(); // live updates
+  useNotifications();
+  useMqttNotifications();
+
   return (
-    <Flex minH="100vh" bg="gray.50">
-      <Box display={{ base: "none", md: "block" }}>
+    <Flex h="100vh" overflow="hidden" bg="gray.50">
+      {/* Sidebar — never scrolls, stays full height */}
+      <Box display={{ base: "none", md: "flex" }} flexShrink={0}>
         <Sidebar />
       </Box>
       <MobileSidebar />
+
+      {/* Right side: topbar + scrollable content */}
       <Flex direction="column" flex={1} overflow="hidden">
         <Topbar />
-        <Box as="main" flex={1} overflow="auto" p={6}>
+        <Box as="main" flex={1} overflowY="auto" p={6}>
           <Outlet />
         </Box>
       </Flex>

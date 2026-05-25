@@ -85,7 +85,7 @@ export function AdminPage() {
           onIsActiveChange={setIsActive}
           onReset={resetFilters}
         />
-        <Box display={{ base: "none", md: "block" }}>
+        <Box display={{ base: "none", lg: "block" }}>
           <UsersTable
             data={data?.data}
             isLoading={isLoading}
@@ -96,7 +96,7 @@ export function AdminPage() {
             onPrevPage={prevPage}
           />
         </Box>
-        <Box display={{ base: "block", md: "none" }}>
+        <Box display={{ base: "block", lg: "none" }}>
           <UserCards
             data={data?.data}
             isLoading={isLoading}

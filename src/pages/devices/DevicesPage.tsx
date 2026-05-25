@@ -183,7 +183,7 @@ export function DevicesPage() {
       )}
 
       {/* ── Mobile: cards (base → sm) ── */}
-      <Box display={{ base: "block", md: "none" }}>
+      <Box display={{ base: "block", lg: "none" }}>
         {isLoading ? (
           <Text textAlign="center" py={8} color="gray.400">
             Loading...
@@ -206,26 +206,6 @@ export function DevicesPage() {
             ))}
           </VStack>
         )}
-      </Box>
-
-      {/* ── Tablet: scrollable table (md) ── */}
-      <Box display={{ base: "none", md: "block", lg: "none" }} overflowX="auto">
-        <Table.Root variant="outline" rounded="md" minW="700px">
-          <TableContent
-            data={data}
-            isLoading={isLoading}
-            isEmpty={isEmpty}
-            openEdit={openEdit}
-            handleToggleActive={handleToggleActive}
-            isActivating={isActivating}
-            isDeactivating={isDeactivating}
-            refreshApiKey={refreshApiKey}
-            isRefreshing={isRefreshing}
-            handleCopy={handleCopy}
-            copiedId={copiedId}
-            navigate={navigate}
-          />
-        </Table.Root>
       </Box>
 
       {/* ── Desktop: full table (lg+) ── */}

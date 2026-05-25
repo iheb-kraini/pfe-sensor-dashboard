@@ -14,10 +14,10 @@ export default function MobileSidebar() {
       size={"xs"}
     >
       <Drawer.Backdrop />
-      <Drawer.Positioner>
+      <Drawer.Positioner style={{ position: "fixed" }}>
         <Drawer.Content
           style={{
-            height: "100dvh",
+            height: "100%",
             maxWidth: "240px", // ← matches your sidebar width exactly
           }}
         >
