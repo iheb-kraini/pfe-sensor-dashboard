@@ -1,6 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-// import { DevicesPage } from "src/pages/devices/DevicesPage";
-// import { SensorWindowsPage } from "src/pages/sensor-windows/SensorWindowsPage";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { ProtectedRoute } from "./components/shared/ProtectedRoute";
 import { AppShell } from "./components/layout/AppShell";

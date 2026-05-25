@@ -33,8 +33,7 @@ export function Sidebar() {
       flexShrink={0}
     >
       {/* Logo */}
-      <Flex align="center" gap={2} px={2} mb={8}>
-        <Text fontSize="xl">🚆</Text>
+      <Flex gap={2} px={2} mb={8} justify={"center"}>
         <Text fontWeight="bold" fontSize="md" letterSpacing="tight">
           RailMonitor
         </Text>

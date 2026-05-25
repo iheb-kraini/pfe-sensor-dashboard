@@ -1,11 +1,14 @@
-import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, IconButton, Text } from "@chakra-ui/react";
 import { useAuthStore } from "../../store/auth.store";
 import { useLogout } from "../../hooks/useAuth";
 import { NotificationBell } from "../notifications/NotificationBell";
+import { useSidebarStore } from "../../store/sidebarStore";
+import { LuMenu } from "react-icons/lu";
 
 export function Topbar() {
   const user = useAuthStore((s) => s.user);
   const logout = useLogout();
+  const onToggle = useSidebarStore((s) => s.onToggle);
 
   return (
     <Box
@@ -17,14 +20,31 @@ export function Topbar() {
       flexShrink={0}
     >
       <Flex h="full" align="center" justify="space-between">
-        <Text fontSize="sm" color="gray.600">
-          Welcome back,{" "}
-          <Text as="span" fontWeight="semibold" color="gray.800">
-            {user?.firstName} {user?.lastName}
-          </Text>
-        </Text>
+        <Flex align="center" gap={3}>
+          {/* Hamburger — mobile only */}
+          <IconButton
+            display={{ base: "flex", md: "none" }}
+            aria-label="Open menu"
+            variant="ghost"
+            size="sm"
+            onClick={onToggle}
+          >
+            <LuMenu />
+          </IconButton>
 
-        <Flex align="center" gap={4}>
+          <Text
+            fontSize="sm"
+            color="gray.600"
+            display={{ base: "none", sm: "block" }}
+          >
+            Welcome back,{" "}
+            <Text as="span" fontWeight="semibold" color="gray.800">
+              {user?.firstName} {user?.lastName}
+            </Text>
+          </Text>
+        </Flex>
+
+        <Flex align="center" gap={4} justify={"space-between"}>
           <Box
             px={2}
             py={1}
