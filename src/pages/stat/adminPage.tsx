@@ -8,6 +8,7 @@ import { StatsCards } from "../../components/stats/statscards";
 import { UserFilters, UsersTable } from "../../components/Users/usersTable";
 import { useUserModal } from "../../hooks/useUserModal";
 import { UserFormModal } from "../../components/Users/UserFormModal";
+import { UserCards } from "../../components/Users/UserCard";
 
 export function AdminPage() {
   const stats = useAdminStats();
@@ -36,7 +37,7 @@ export function AdminPage() {
     useUsers(filters);
 
   return (
-    <Box p={6}>
+    <Box p={{ base: 2, md: 6 }}>
       {/* Header */}
       <Box mb={6}>
         <Heading size="lg">Admin Panel</Heading>
@@ -84,16 +85,28 @@ export function AdminPage() {
           onIsActiveChange={setIsActive}
           onReset={resetFilters}
         />
-
-        <UsersTable
-          data={data?.data}
-          isLoading={isLoading}
-          isError={isError}
-          page={page}
-          totalPages={totalPages}
-          onNextPage={nextPage}
-          onPrevPage={prevPage}
-        />
+        <Box display={{ base: "none", md: "block" }}>
+          <UsersTable
+            data={data?.data}
+            isLoading={isLoading}
+            isError={isError}
+            page={page}
+            totalPages={totalPages}
+            onNextPage={nextPage}
+            onPrevPage={prevPage}
+          />
+        </Box>
+        <Box display={{ base: "block", md: "none" }}>
+          <UserCards
+            data={data?.data}
+            isLoading={isLoading}
+            isError={isError}
+            page={page}
+            totalPages={totalPages}
+            onNextPage={nextPage}
+            onPrevPage={prevPage}
+          />
+        </Box>
       </Box>
       <UserFormModal open={open} onClose={onClose} />
     </Box>
