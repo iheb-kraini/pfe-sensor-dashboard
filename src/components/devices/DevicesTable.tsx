@@ -4,7 +4,13 @@ import {
   HStack,
   Skeleton,
   Table,
+  TooltipArrow,
+  TooltipContent,
+  TooltipPositioner,
+  TooltipRoot,
+  TooltipTrigger,
 } from "@chakra-ui/react";
+import { LuCopy, LuCheck, LuEye, LuPencil, LuPower, LuRefreshCw } from "react-icons/lu";
 import type { Device } from "../../types/device.types";
 
 interface DevicesTableProps {
@@ -45,7 +51,7 @@ export function DevicesTable({
           <Table.ColumnHeader>Status</Table.ColumnHeader>
           <Table.ColumnHeader>Active</Table.ColumnHeader>
           <Table.ColumnHeader>Created At</Table.ColumnHeader>
-          <Table.ColumnHeader>Actions</Table.ColumnHeader>
+          <Table.ColumnHeader textAlign="center">Actions</Table.ColumnHeader>
         </Table.Row>
       </Table.Header>
       <Table.Body>
@@ -98,50 +104,109 @@ export function DevicesTable({
                 {new Date(device.createdAt).toLocaleDateString()}
               </Table.Cell>
               <Table.Cell>
-                <HStack gap={2} flexWrap="wrap">
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    onClick={() => openEdit(device)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    colorPalette={device.isActive ? "red" : "green"}
-                    loading={isActivating || isDeactivating}
-                    onClick={() => handleToggleActive(device)}
-                  >
-                    {device.isActive ? "Deactivate" : "Activate"}
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    colorPalette="purple"
-                    loading={isRefreshing}
-                    onClick={() => refreshApiKey(device.id)}
-                  >
-                    Refresh Key
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    colorPalette={copiedId === device.id ? "green" : "orange"}
-                    onClick={() => handleCopy(device)}
-                  >
-                    {copiedId === device.id ? "Copied!" : "Copy Key"}
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    colorPalette="teal"
-                    onClick={() =>
-                      navigate(`/devices/${device.id}/sensor-windows`)
-                    }
-                  >
-                    View Data
-                  </Button>
+                <HStack gap={0} justifyContent="center">
+                  <TooltipRoot>
+                    <TooltipTrigger>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Edit device"
+                        onClick={() => openEdit(device)}
+                      >
+                        <LuPencil size={16} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipPositioner>
+                      <TooltipContent>
+                        <TooltipArrow />
+                        Edit
+                      </TooltipContent>
+                    </TooltipPositioner>
+                  </TooltipRoot>
+
+                  <TooltipRoot>
+                    <TooltipTrigger>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        aria-label={device.isActive ? "Deactivate device" : "Activate device"}
+                        colorPalette={device.isActive ? "red" : "green"}
+                        loading={isActivating || isDeactivating}
+                        onClick={() => handleToggleActive(device)}
+                      >
+                        <LuPower size={16} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipPositioner>
+                      <TooltipContent>
+                        <TooltipArrow />
+                        {device.isActive ? "Deactivate" : "Activate"}
+                      </TooltipContent>
+                    </TooltipPositioner>
+                  </TooltipRoot>
+
+                  <TooltipRoot>
+                    <TooltipTrigger>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Refresh API key"
+                        colorPalette="purple"
+                        loading={isRefreshing}
+                        onClick={() => refreshApiKey(device.id)}
+                      >
+                        <LuRefreshCw size={16} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipPositioner>
+                      <TooltipContent>
+                        <TooltipArrow />
+                        Refresh API Key
+                      </TooltipContent>
+                    </TooltipPositioner>
+                  </TooltipRoot>
+
+                  <TooltipRoot>
+                    <TooltipTrigger>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Copy API key"
+                        colorPalette={copiedId === device.id ? "green" : "orange"}
+                        onClick={() => handleCopy(device)}
+                      >
+                        {copiedId === device.id ? <LuCheck size={16} /> : <LuCopy size={16} />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipPositioner>
+                      <TooltipContent>
+                        <TooltipArrow />
+                        {copiedId === device.id ? "Copied!" : "Copy API Key"}
+                      </TooltipContent>
+                    </TooltipPositioner>
+                  </TooltipRoot>
+
+                  <TooltipRoot>
+                    <TooltipTrigger>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        aria-label="View sensor data"
+                        colorPalette="teal"
+                        onClick={() =>
+                          navigate(`/devices/${device.id}/sensor-windows`)
+                        }
+                      >
+                        <LuEye size={16} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipPositioner>
+                      <TooltipContent>
+                        <TooltipArrow />
+                        View Sensor Data
+                      </TooltipContent>
+                    </TooltipPositioner>
+                  </TooltipRoot>
                 </HStack>
               </Table.Cell>
             </Table.Row>
