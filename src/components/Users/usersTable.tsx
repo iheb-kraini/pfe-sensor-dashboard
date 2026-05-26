@@ -208,7 +208,7 @@ export function UsersTable({
             </Table.Row>
           ) : (
             data?.map((user) => (
-              <Table.Row key={user.id} _hover={{ bg: "muted.50" }}>
+              <Table.Row key={user.id} transition="background 0.15s" _hover={{ bg: "muted.100" }}>
                 <Table.Cell fontWeight="medium" color="muted.900">
                   {user.firstName} {user.lastName}
                 </Table.Cell>

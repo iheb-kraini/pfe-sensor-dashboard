@@ -17,7 +17,7 @@ export function DeviceCard({
   navigate,
 }: DeviceCardProps) {
   return (
-    <Box bg="white" rounded="xl" p={5} shadow="sm">
+    <Box bg="white" rounded="xl" p={5} shadow="sm" transition="all 0.2s" _hover={{ shadow: "md", transform: "translateY(-2px)" }}>
       <Flex justify="space-between" align="flex-start" mb={3}>
         <Box>
           <Text fontWeight="semibold" fontSize="sm" color="muted.900">

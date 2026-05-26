@@ -150,7 +150,8 @@ export function SensorWindowsTable({
                   <Table.Row
                     key={w.id}
                     cursor="pointer"
-                    _hover={{ bg: "muted.50" }}
+                    transition="background 0.15s"
+                    _hover={{ bg: "muted.100" }}
                     onClick={() => handleSelect(w.id)}
                   >
                     <Table.Cell color="muted.400" fontSize="sm">

@@ -18,7 +18,7 @@ export function AppShell() {
       <MobileSidebar />
       <Flex direction="column" flex={1} overflow="hidden">
         <Topbar />
-        <Box as="main" flex={1} overflowY="auto" px={8} pt={6} pb={8}>
+        <Box as="main" flex={1} overflowY="auto" px={8} pt={6} pb={8} css={{ animation: "fadeIn 0.25s ease-out" }}>
           <Outlet />
         </Box>
       </Flex>

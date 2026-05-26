@@ -60,6 +60,8 @@ export function UserCards({
               p={5}
               bg="white"
               shadow="sm"
+              transition="all 0.2s"
+              _hover={{ shadow: "md", transform: "translateY(-2px)" }}
             >
               <HStack justify="space-between" mb={1}>
                 <Text fontWeight="semibold" fontSize="sm" truncate color="muted.900">

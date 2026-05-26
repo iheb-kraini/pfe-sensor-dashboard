@@ -53,6 +53,8 @@ export function SummaryCards({
           shadow="sm"
           flex="1"
           minW="140px"
+          transition="all 0.2s"
+          _hover={{ shadow: "md", transform: "translateY(-2px)" }}
         >
           <Text
             fontSize="xs"

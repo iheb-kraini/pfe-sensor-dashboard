@@ -73,7 +73,7 @@ export function DevicesTable({
           </Table.Row>
         ) : (
           data?.data.map((device) => (
-            <Table.Row key={device.id} _hover={{ bg: "muted.50" }}>
+            <Table.Row key={device.id} transition="background 0.15s" _hover={{ bg: "muted.100" }}>
               <Table.Cell fontWeight="medium" color="muted.900">{device.name}</Table.Cell>
               <Table.Cell color="muted.500" fontSize="sm">
                 {device.serialNumber}

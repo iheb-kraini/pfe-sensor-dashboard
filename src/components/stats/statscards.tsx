@@ -20,7 +20,7 @@ function StatCard({
   isLoading,
 }: StatCardProps) {
   return (
-    <Box bg="white" rounded="xl" p={6} shadow="sm">
+    <Box bg="white" rounded="xl" p={6} shadow="sm" transition="all 0.2s" _hover={{ shadow: "md", transform: "translateY(-2px)" }}>
       <Box mb={3} color="muted.400">
         {icon}
       </Box>

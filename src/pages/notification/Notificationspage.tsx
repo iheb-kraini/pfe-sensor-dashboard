@@ -139,7 +139,8 @@ export function NotificationsPage() {
               <Table.Row
                 key={n.id}
                 cursor="pointer"
-                _hover={{ bg: "muted.50" }}
+                transition="background 0.15s"
+                _hover={{ bg: "muted.100" }}
                 onClick={() => setSelected(n)}
                 bg={n.state === "unread" ? "yellow.50" : undefined}
               >
