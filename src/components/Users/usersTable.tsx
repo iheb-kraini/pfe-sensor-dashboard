@@ -147,8 +147,8 @@ export function UsersTable({
               </Table.Cell>
             </Table.Row>
           ) : (
-            data?.map((user) => (
-              <Table.Row key={user.id}>
+            data?.map((user, i) => (
+              <Table.Row key={user.id} bg={i % 2 === 0 ? "white" : "gray.50"} _hover={{ bg: "gray.100" }}>
                 <Table.Cell fontWeight="medium">
                   {user.firstName} {user.lastName}
                 </Table.Cell>
