@@ -1,5 +1,4 @@
 import {
-  Badge,
   Box,
   Button,
   Flex,
@@ -24,98 +23,9 @@ import { useState } from "react";
 import { useDeviceFilters } from "../../hooks/useDeviceFilters";
 import { DeviceFilters } from "../../components/devices/DeviceFilters";
 import { useNavigate } from "react-router-dom";
+import { DeviceCard } from "../../components/devices/DeviceCard";
+import { DevicesTable } from "../../components/devices/DevicesTable";
 
-// ─── Device Card (mobile only) ───────────────────────────────────────────────
-function DeviceCard({
-  device,
-  onEdit,
-  onCopy,
-  copiedId,
-  navigate,
-}: {
-  device: Device;
-  onEdit: (d: Device) => void;
-  onCopy: (d: Device) => void;
-  copiedId: number | null;
-  navigate: (path: string) => void;
-}) {
-  return (
-    <Box
-      bg="white"
-      border="1px solid"
-      borderColor="gray.200"
-      rounded="xl"
-      p={4}
-      shadow="sm"
-    >
-      {/* Header row */}
-      <Flex justify="space-between" align="flex-start" mb={3}>
-        <Box>
-          <Text fontWeight="semibold" fontSize="sm" color="gray.800">
-            {device.name}
-          </Text>
-          <Text fontSize="xs" color="gray.400" mt={0.5}>
-            {device.serialNumber}
-          </Text>
-        </Box>
-        <HStack gap={2}>
-          <Badge
-            colorPalette={
-              device.status === "online"
-                ? "green"
-                : device.status === "maintenance"
-                  ? "orange"
-                  : "gray"
-            }
-            fontSize="xs"
-          >
-            {device.status}
-          </Badge>
-          <Badge colorPalette={device.isActive ? "green" : "red"} fontSize="xs">
-            {device.isActive ? "Active" : "Inactive"}
-          </Badge>
-        </HStack>
-      </Flex>
-
-      {/* Created */}
-      <Text fontSize="xs" color="gray.400" mb={4}>
-        Created {new Date(device.createdAt).toLocaleDateString()}
-      </Text>
-
-      {/* Actions — only the important 3 */}
-      <HStack gap={2} flexWrap="wrap">
-        <Button
-          size="xs"
-          variant="outline"
-          flex={1}
-          onClick={() => onEdit(device)}
-        >
-          Edit
-        </Button>
-        <Button
-          size="xs"
-          variant="outline"
-          colorPalette="teal"
-          flex={1}
-          onClick={() => navigate(`/devices/${device.id}/sensor-windows`)}
-        >
-          View Data
-        </Button>
-        <Button
-          size="xs"
-          variant="outline"
-          colorPalette={copiedId === device.id ? "green" : "orange"}
-          flex={1}
-          onClick={() => onCopy(device)}
-        >
-          {copiedId === device.id ? "Copied!" : "Copy Key"}
-        </Button>
-      </HStack>
-    </Box>
-  );
-}
-
-// ─── Main Page ────────────────────────────────────────────────────────────────
 export function DevicesPage() {
   const navigate = useNavigate();
 
@@ -154,10 +64,9 @@ export function DevicesPage() {
   const isEmpty = !isLoading && data?.data.length === 0;
 
   return (
-    <Box p={{ base: 4, md: 6 }}>
-      {/* Page header */}
+    <Box>
       <HStack justify="space-between" mb={6}>
-        <Heading size={{ base: "md", md: "lg" }}>Devices</Heading>
+        <Heading size="xl" fontWeight="extrabold" color="muted.900">Devices</Heading>
         <Button
           size={{ base: "sm", md: "md" }}
           colorPalette="blue"
@@ -184,7 +93,6 @@ export function DevicesPage() {
         </Box>
       )}
 
-      {/* ── Mobile: cards (base → sm) ── */}
       <Box display={{ base: "block", lg: "none" }}>
         {isLoading ? (
           <VStack gap={3}>
@@ -193,7 +101,7 @@ export function DevicesPage() {
             ))}
           </VStack>
         ) : isEmpty ? (
-          <Flex direction="column" align="center" py={10} color="gray.400" gap={3}>
+          <Flex direction="column" align="center" py={10} color="muted.400" gap={3}>
             <Box opacity={0.4}><LuRadio size={40} /></Box>
             <Text fontSize="sm">No devices found</Text>
           </Flex>
@@ -213,10 +121,9 @@ export function DevicesPage() {
         )}
       </Box>
 
-      {/* ── Desktop: full table (lg+) ── */}
       <Box display={{ base: "none", lg: "block" }}>
-        <Table.Root variant="outline" rounded="md">
-          <TableContent
+        <Table.Root>
+          <DevicesTable
             data={data}
             isLoading={isLoading}
             isEmpty={isEmpty}
@@ -233,23 +140,22 @@ export function DevicesPage() {
         </Table.Root>
       </Box>
 
-      {/* Pagination */}
       {totalPages > 1 && (
-        <HStack justify="center" mt={4} gap={2}>
+        <HStack justify="center" mt={6} gap={3}>
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             disabled={page === 1}
             onClick={prevPage}
           >
             Previous
           </Button>
-          <Text fontSize="sm" color="gray.500">
+          <Text fontSize="sm" color="muted.500">
             Page {page} of {totalPages}
           </Text>
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             disabled={page === totalPages}
             onClick={nextPage}
           >
@@ -260,132 +166,5 @@ export function DevicesPage() {
 
       <DeviceFormModal open={open} onClose={onClose} device={selectedDevice} />
     </Box>
-  );
-}
-
-// ─── Shared table body (used for both tablet + desktop) ───────────────────────
-function TableContent({
-  data,
-  isLoading,
-  isEmpty,
-  openEdit,
-  handleToggleActive,
-  isActivating,
-  isDeactivating,
-  refreshApiKey,
-  isRefreshing,
-  handleCopy,
-  copiedId,
-  navigate,
-}: any) {
-  return (
-    <>
-      <Table.Header>
-        <Table.Row>
-          <Table.ColumnHeader>Name</Table.ColumnHeader>
-          <Table.ColumnHeader>Serial Number</Table.ColumnHeader>
-          <Table.ColumnHeader>Status</Table.ColumnHeader>
-          <Table.ColumnHeader>Active</Table.ColumnHeader>
-          <Table.ColumnHeader>Created At</Table.ColumnHeader>
-          <Table.ColumnHeader>Actions</Table.ColumnHeader>
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
-        {isLoading ? (
-          Array.from({ length: 5 }).map((_, i) => (
-            <Table.Row key={i}>
-              {Array.from({ length: 6 }).map((_, j) => (
-                <Table.Cell key={j}>
-                  <Skeleton h="20px" rounded="md" />
-                </Table.Cell>
-              ))}
-            </Table.Row>
-          ))
-        ) : isEmpty ? (
-          <Table.Row>
-            <Table.Cell colSpan={6} textAlign="center" py={8} color="gray.400">
-              No devices found
-            </Table.Cell>
-          </Table.Row>
-        ) : (
-          data?.data.map((device: Device, i: number) => (
-            <Table.Row key={device.id} bg={i % 2 === 0 ? "white" : "gray.50"}>
-              <Table.Cell fontWeight="medium">{device.name}</Table.Cell>
-              <Table.Cell color="gray.500" fontSize="sm">
-                {device.serialNumber}
-              </Table.Cell>
-              <Table.Cell>
-                <Badge
-                  colorPalette={
-                    device.status === "online"
-                      ? "green"
-                      : device.status === "maintenance"
-                        ? "orange"
-                        : "gray"
-                  }
-                >
-                  {device.status}
-                </Badge>
-              </Table.Cell>
-              <Table.Cell>
-                <Badge colorPalette={device.isActive ? "green" : "red"}>
-                  {device.isActive ? "Active" : "Inactive"}
-                </Badge>
-              </Table.Cell>
-              <Table.Cell color="gray.500" fontSize="sm">
-                {new Date(device.createdAt).toLocaleDateString()}
-              </Table.Cell>
-              <Table.Cell>
-                <HStack gap={2} flexWrap="wrap">
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    onClick={() => openEdit(device)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    colorPalette={device.isActive ? "red" : "green"}
-                    loading={isActivating || isDeactivating}
-                    onClick={() => handleToggleActive(device)}
-                  >
-                    {device.isActive ? "Deactivate" : "Activate"}
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    colorPalette="purple"
-                    loading={isRefreshing}
-                    onClick={() => refreshApiKey(device.id)}
-                  >
-                    Refresh Key
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    colorPalette={copiedId === device.id ? "green" : "orange"}
-                    onClick={() => handleCopy(device)}
-                  >
-                    {copiedId === device.id ? "Copied!" : "Copy Key"}
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    colorPalette="teal"
-                    onClick={() =>
-                      navigate(`/devices/${device.id}/sensor-windows`)
-                    }
-                  >
-                    View Data
-                  </Button>
-                </HStack>
-              </Table.Cell>
-            </Table.Row>
-          ))
-        )}
-      </Table.Body>
-    </>
   );
 }

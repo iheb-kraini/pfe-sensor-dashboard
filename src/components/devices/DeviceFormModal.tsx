@@ -22,7 +22,7 @@ import { useCreateDevice, useUpdateDevice } from "../../hooks/useDevices";
 interface Props {
   open: boolean;
   onClose: () => void;
-  device?: Device; // if provided → edit mode
+  device?: Device;
 }
 
 export function DeviceFormModal({ open, onClose, device }: Props) {
@@ -50,7 +50,6 @@ export function DeviceFormModal({ open, onClose, device }: Props) {
       : {},
   });
 
-  // reset form when modal opens with new device
   useEffect(() => {
     if (open) {
       reset(
@@ -101,7 +100,7 @@ export function DeviceFormModal({ open, onClose, device }: Props) {
                     <Input
                       placeholder="2356698"
                       {...register("serialNumber")}
-                      disabled={isEdit} // serial number shouldn't change
+                      disabled={isEdit}
                     />
                     <Field.ErrorText>
                       {errors.serialNumber?.message}

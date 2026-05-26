@@ -20,15 +20,13 @@ export function ProfilePage() {
   return (
     <Center>
       <Box maxW="520px" w="full">
-        <Heading size="lg" mb={6}>
+        <Heading size="xl" fontWeight="extrabold" mb={6} color="muted.900">
           Profile
         </Heading>
-        <Card.Root variant="outline" position="relative" overflow="hidden">
-          {/* Accent header bar */}
-          <Box h="4px" bg="linear-gradient(90deg, blue.400, purple.400)" />
+        <Card.Root overflow="hidden" shadow="sm">
+          <Box h="3px" bg="accent" />
           <Card.Body>
             <Stack gap={6}>
-              {/* Avatar + name */}
               <HStack gap={4}>
                 <Avatar.Root size="xl">
                   <Avatar.Fallback>
@@ -37,7 +35,7 @@ export function ProfilePage() {
                   </Avatar.Fallback>
                 </Avatar.Root>
                 <Stack gap={1}>
-                  <Text fontWeight="semibold" fontSize="lg">
+                  <Text fontWeight="bold" fontSize="lg" color="muted.900">
                     {user.firstName} {user.lastName}
                   </Text>
                   <Badge
@@ -53,7 +51,6 @@ export function ProfilePage() {
                   </Badge>
                 </Stack>
               </HStack>
-              {/* Info rows */}
               <Stack gap={3}>
                 <InfoRow label="Email" value={user.email} />
                 <InfoRow label="First Name" value={user.firstName} />
@@ -86,12 +83,12 @@ function InfoRow({ label, value }: InfoRowProps) {
       justify="space-between"
       py={2}
       borderBottom="1px solid"
-      borderColor="gray.100"
+      borderColor="muted.100"
     >
-      <Text fontSize="sm" color="gray.500" fontWeight="medium">
+      <Text fontSize="sm" color="muted.500" fontWeight="medium">
         {label}
       </Text>
-      <Text fontSize="sm" fontWeight="medium">
+      <Text fontSize="sm" fontWeight="semibold" color="muted.900">
         {value}
       </Text>
     </HStack>

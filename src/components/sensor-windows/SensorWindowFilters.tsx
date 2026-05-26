@@ -1,4 +1,4 @@
-import { Button, HStack, Input, Stack, Text } from "@chakra-ui/react";
+import { Box, Button, HStack, Input, Stack, Text } from "@chakra-ui/react";
 
 interface Props {
   from: string;
@@ -29,67 +29,69 @@ export function SensorWindowFilters({
   onRangePreset,
 }: Props) {
   return (
-    <Stack gap={3}>
-      <HStack gap={2} flexWrap="wrap">
-        <Stack gap={1}>
-          <Text fontSize="xs" color="gray.500" fontWeight="medium">
-            From
-          </Text>
-          <Input
-            type="datetime-local"
-            value={from}
-            onChange={(e) => onFromChange(e.target.value)}
-            maxW="220px"
-            size="sm"
-          />
-        </Stack>
-        <Stack gap={1}>
-          <Text fontSize="xs" color="gray.500" fontWeight="medium">
-            To
-          </Text>
-          <Input
-            type="datetime-local"
-            value={to}
-            onChange={(e) => onToChange(e.target.value)}
-            maxW="220px"
-            size="sm"
-          />
-        </Stack>
-        <Button
-          size="sm"
-          colorPalette="blue"
-          alignSelf="flex-end"
-          onClick={onApply}
-        >
-          Apply
-        </Button>
-        {hasFilters && (
+    <Box bg="white" shadow="sm" rounded="xl" p={6} mb={6}>
+      <Stack gap={3}>
+        <HStack gap={4} flexWrap="wrap">
+          <Stack gap={1}>
+            <Text fontSize="xs" color="muted.500" fontWeight="medium">
+              From
+            </Text>
+            <Input
+              type="datetime-local"
+              value={from}
+              onChange={(e) => onFromChange(e.target.value)}
+              maxW="220px"
+              size="sm"
+            />
+          </Stack>
+          <Stack gap={1}>
+            <Text fontSize="xs" color="muted.500" fontWeight="medium">
+              To
+            </Text>
+            <Input
+              type="datetime-local"
+              value={to}
+              onChange={(e) => onToChange(e.target.value)}
+              maxW="220px"
+              size="sm"
+            />
+          </Stack>
           <Button
             size="sm"
-            variant="ghost"
-            colorPalette="red"
+            colorPalette="blue"
             alignSelf="flex-end"
-            onClick={onClear}
+            onClick={onApply}
           >
-            Clear
+            Apply
           </Button>
-        )}
-      </HStack>
-      <HStack gap={2}>
-        <Text fontSize="xs" color="gray.500" fontWeight="medium">
-          Quick:
-        </Text>
-        {RANGE_PRESETS.map(({ label, hours }) => (
-          <Button
-            key={hours}
-            size="xs"
-            variant="outline"
-            onClick={() => onRangePreset(hours)}
-          >
-            {label}
-          </Button>
-        ))}
-      </HStack>
-    </Stack>
+          {hasFilters && (
+            <Button
+              size="sm"
+              variant="ghost"
+              colorPalette="red"
+              alignSelf="flex-end"
+              onClick={onClear}
+            >
+              Clear
+            </Button>
+          )}
+        </HStack>
+        <HStack gap={2}>
+          <Text fontSize="xs" color="muted.500" fontWeight="medium">
+            Quick:
+          </Text>
+          {RANGE_PRESETS.map(({ label, hours }) => (
+            <Button
+              key={hours}
+              size="xs"
+              variant="outline"
+              onClick={() => onRangePreset(hours)}
+            >
+              {label}
+            </Button>
+          ))}
+        </HStack>
+      </Stack>
+    </Box>
   );
 }

@@ -37,23 +37,21 @@ function WindowCard({
   return (
     <Box
       bg="white"
-      border="1px solid"
-      borderColor="gray.200"
       rounded="xl"
-      p={4}
+      p={5}
       shadow="sm"
       cursor="pointer"
       onClick={() => onSelect(row.id)}
     >
       <HStack justify="space-between" mb={2}>
-        <Text fontWeight="semibold" fontSize="sm" color="gray.800">
+        <Text fontWeight="semibold" fontSize="sm" color="muted.900">
           Window #{row.id}
         </Text>
         <Badge colorPalette={severity.palette} size="sm">
           {severity.label}
         </Badge>
       </HStack>
-      <Text fontSize="xs" color="gray.400" mb={3}>
+      <Text fontSize="xs" color="muted.400" mb={3}>
         {new Date(row.recordedAt).toLocaleString()}
       </Text>
       <HStack gap={4} fontSize="xs" fontFamily="mono">
@@ -81,18 +79,17 @@ export function SensorWindowsTable({
 
   return (
     <Box>
-      <HStack justify="space-between" mb={3}>
-        <Text fontSize="sm" fontWeight="semibold" color="gray.700">
+      <HStack justify="space-between" mb={4}>
+        <Text fontSize="sm" fontWeight="bold" color="muted.700">
           Sensor Windows
         </Text>
         {totalPages > 1 && (
-          <Text fontSize="xs" color="gray.400">
+          <Text fontSize="xs" color="muted.400">
             Page {page} of {totalPages}
           </Text>
         )}
       </HStack>
 
-      {/* Mobile: cards */}
       <Box display={{ base: "block", lg: "none" }}>
         {isLoading ? (
           <VStack gap={3}>
@@ -101,7 +98,7 @@ export function SensorWindowsTable({
             ))}
           </VStack>
         ) : windows.length === 0 ? (
-          <Flex direction="column" align="center" py={10} color="gray.400" gap={3}>
+          <Flex direction="column" align="center" py={10} color="muted.400" gap={3}>
             <Box opacity={0.4}><LuActivity size={36} /></Box>
             <Text fontSize="sm">No windows in this range</Text>
           </Flex>
@@ -114,17 +111,16 @@ export function SensorWindowsTable({
         )}
       </Box>
 
-      {/* Desktop: table */}
       <Box display={{ base: "none", lg: "block" }} overflowX="auto">
-        <Table.Root variant="outline" rounded="md" w="full">
+        <Table.Root>
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeader w="60px">#</Table.ColumnHeader>
-              <Table.ColumnHeader>Time</Table.ColumnHeader>
-              <Table.ColumnHeader textAlign="right">RMS X</Table.ColumnHeader>
-              <Table.ColumnHeader textAlign="right">RMS Y</Table.ColumnHeader>
-              <Table.ColumnHeader textAlign="right">RMS Z</Table.ColumnHeader>
-              <Table.ColumnHeader>Level</Table.ColumnHeader>
+              <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">#</Table.ColumnHeader>
+              <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Time</Table.ColumnHeader>
+              <Table.ColumnHeader textAlign="right" fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">RMS X</Table.ColumnHeader>
+              <Table.ColumnHeader textAlign="right" fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">RMS Y</Table.ColumnHeader>
+              <Table.ColumnHeader textAlign="right" fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">RMS Z</Table.ColumnHeader>
+              <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Level</Table.ColumnHeader>
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -140,12 +136,7 @@ export function SensorWindowsTable({
               ))
             ) : windows.length === 0 ? (
               <Table.Row>
-                <Table.Cell
-                  colSpan={6}
-                  textAlign="center"
-                  py={8}
-                  color="gray.400"
-                >
+                <Table.Cell colSpan={6} textAlign="center" py={8} color="muted.400">
                   <Flex direction="column" align="center" gap={2}>
                     <Box opacity={0.4}><LuActivity size={28} /></Box>
                     <Text fontSize="sm">No windows in this range</Text>
@@ -153,29 +144,29 @@ export function SensorWindowsTable({
                 </Table.Cell>
               </Table.Row>
             ) : (
-              windows.map((w, i) => {
+              windows.map((w) => {
                 const severity = getSeverityLabel(w.rmsX, w.rmsY, w.rmsZ);
                 return (
                   <Table.Row
                     key={w.id}
                     cursor="pointer"
-                    _hover={{ bg: "gray.100" }}
+                    transition="background 0.15s"
+                    _hover={{ bg: "muted.100" }}
                     onClick={() => handleSelect(w.id)}
-                    bg={i % 2 === 0 ? "white" : "gray.50"}
                   >
-                    <Table.Cell color="gray.400" fontSize="sm">
+                    <Table.Cell color="muted.400" fontSize="sm">
                       {w.id}
                     </Table.Cell>
-                    <Table.Cell fontSize="sm" whiteSpace="nowrap">
+                    <Table.Cell fontSize="sm" whiteSpace="nowrap" color="muted.900">
                       {new Date(w.recordedAt).toLocaleString()}
                     </Table.Cell>
-                    <Table.Cell textAlign="right" fontFamily="mono" fontSize="sm">
+                    <Table.Cell textAlign="right" fontFamily="mono" fontSize="sm" color="muted.900">
                       {w.rmsX.toFixed(4)}
                     </Table.Cell>
-                    <Table.Cell textAlign="right" fontFamily="mono" fontSize="sm">
+                    <Table.Cell textAlign="right" fontFamily="mono" fontSize="sm" color="muted.900">
                       {w.rmsY.toFixed(4)}
                     </Table.Cell>
-                    <Table.Cell textAlign="right" fontFamily="mono" fontSize="sm">
+                    <Table.Cell textAlign="right" fontFamily="mono" fontSize="sm" color="muted.900">
                       {w.rmsZ.toFixed(4)}
                     </Table.Cell>
                     <Table.Cell>
@@ -192,21 +183,21 @@ export function SensorWindowsTable({
       </Box>
 
       {totalPages > 1 && (
-        <HStack justify="center" mt={4} gap={2}>
+        <HStack justify="center" mt={6} gap={3}>
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             disabled={page === 1}
             onClick={onPrevPage}
           >
             Previous
           </Button>
-          <Text fontSize="sm" color="gray.500">
+          <Text fontSize="sm" color="muted.500">
             Page {page} of {totalPages}
           </Text>
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             disabled={page === totalPages}
             onClick={onNextPage}
           >

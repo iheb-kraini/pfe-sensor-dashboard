@@ -7,7 +7,6 @@ interface StatCardProps {
   value: number;
   sub?: string;
   subValue?: number;
-  accent: string;
   icon: ReactNode;
   isLoading: boolean;
 }
@@ -17,33 +16,12 @@ function StatCard({
   value,
   sub,
   subValue,
-  accent,
   icon,
   isLoading,
 }: StatCardProps) {
   return (
-    <Box
-      bg="white"
-      rounded="xl"
-      p={5}
-      borderWidth="1px"
-      borderColor="gray.100"
-      shadow="sm"
-      position="relative"
-      overflow="hidden"
-    >
-      {/* accent bar */}
-      <Box
-        position="absolute"
-        top={0}
-        left={0}
-        w="4px"
-        h="full"
-        bg={accent}
-        rounded="full"
-      />
-
-      <Box mb={3} color="gray.600">
+    <Box bg="white" rounded="xl" p={6} shadow="sm" transition="all 0.2s" _hover={{ shadow: "md", transform: "translateY(-2px)" }}>
+      <Box mb={3} color="muted.400">
         {icon}
       </Box>
 
@@ -57,16 +35,16 @@ function StatCard({
           <Text
             fontSize="3xl"
             fontWeight="bold"
-            color="gray.800"
+            color="muted.900"
             lineHeight={1}
           >
             {value.toLocaleString()}
           </Text>
-          <Text fontSize="sm" color="gray.500" mt={1}>
+          <Text fontSize="sm" color="muted.500" mt={1}>
             {label}
           </Text>
           {sub && subValue !== undefined && (
-            <Text fontSize="xs" color="gray.400" mt={2}>
+            <Text fontSize="xs" color="muted.400" mt={2}>
               {subValue.toLocaleString()} {sub}
             </Text>
           )}
@@ -111,7 +89,6 @@ export function StatsCards({
         value={totalUsers}
         sub="active"
         subValue={activeUsers}
-        accent="blue.400"
         isLoading={isLoading}
       />
       <StatCard
@@ -120,7 +97,6 @@ export function StatsCards({
         value={activeUsers}
         sub={`of ${totalUsers} total`}
         subValue={totalUsers - activeUsers}
-        accent="green.400"
         isLoading={isLoading}
       />
       <StatCard
@@ -129,7 +105,6 @@ export function StatsCards({
         value={totalDevices}
         sub="online"
         subValue={onlineDevices}
-        accent="purple.400"
         isLoading={isLoading}
       />
       <StatCard
@@ -138,7 +113,6 @@ export function StatsCards({
         value={totalAlerts}
         sub="unopened"
         subValue={unreadAlerts}
-        accent="orange.400"
         isLoading={isLoading}
       />
     </Grid>

@@ -27,25 +27,23 @@ export function Sidebar() {
     <Box
       w="240px"
       h="full"
-      bg="linear-gradient(180deg, #111827 0%, #1f2937 100%)"
+      bg="bg.sidebar"
       color="white"
-      px={4}
+      px={5}
       py={6}
       flexShrink={0}
       display="flex"
       flexDirection="column"
     >
-      {/* Logo */}
       <Flex gap={2.5} px={2} mb={10} justify="center" align="center">
-        <Box w="8px" h="8px" rounded="full" bg="blue.400" shadow="0 0 6px rgba(59,130,246,0.6)" />
+        <Box w="8px" h="8px" rounded="full" bg="accent" />
         <Text fontWeight="bold" fontSize="md" letterSpacing="tight">
           RailMonitor
         </Text>
       </Flex>
 
-      {/* Nav items */}
       <VStack align="stretch" gap={1} flex={1}>
-        <Text fontSize="xs" color="gray.500" px={3} mb={1} fontWeight="semibold" letterSpacing="wider" textTransform="uppercase">
+        <Text fontSize="xs" color="muted.400" px={3} mb={1} fontWeight="semibold" letterSpacing="wider" textTransform="uppercase">
           Navigation
         </Text>
         {navItems.map((item) => (
@@ -61,11 +59,11 @@ export function Sidebar() {
                 px={3}
                 py={2.5}
                 rounded="lg"
-                bg={isActive ? "blue.600" : "transparent"}
-                color={isActive ? "white" : "gray.300"}
+                bg={isActive ? "accent" : "transparent"}
+                color={isActive ? "white" : "muted.300"}
                 position="relative"
                 _hover={{
-                  bg: isActive ? "blue.600" : "gray.700",
+                  bg: isActive ? "accent" : "muted.700",
                   color: "white",
                 }}
                 transition="all 0.15s"
@@ -74,12 +72,12 @@ export function Sidebar() {
                 {isActive && (
                   <Box
                     position="absolute"
-                    left="-12px"
+                    left="-20px"
                     top="50%"
                     transform="translateY(-50%)"
                     w="3px"
                     h="60%"
-                    bg="blue.400"
+                    bg="accent"
                     rounded="full"
                   />
                 )}
@@ -95,17 +93,9 @@ export function Sidebar() {
         ))}
       </VStack>
 
-      {/* Live indicator */}
-      <Flex px={3} py={3} align="center" gap={2.5} borderTop="1px solid" borderColor="gray.700">
-        <Box
-          w="7px"
-          h="7px"
-          rounded="full"
-          bg="green.400"
-          boxShadow="0 0 8px rgba(74,222,128,0.5)"
-          animation="pulse 2s infinite"
-        />
-        <Text fontSize="xs" color="gray.400" fontWeight="medium">
+      <Flex px={3} py={3} align="center" gap={2.5} borderTop="1px solid" borderColor="muted.700">
+        <Box w="7px" h="7px" rounded="full" bg="green.400" />
+        <Text fontSize="xs" color="muted.400" fontWeight="medium">
           System Online
         </Text>
       </Flex>

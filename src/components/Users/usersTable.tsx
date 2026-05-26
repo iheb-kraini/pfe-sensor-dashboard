@@ -4,15 +4,20 @@ import {
   Button,
   HStack,
   Input,
+  InputGroup,
   NativeSelect,
   Skeleton,
   Table,
   Text,
+  TooltipArrow,
+  TooltipContent,
+  TooltipPositioner,
+  TooltipRoot,
+  TooltipTrigger,
 } from "@chakra-ui/react";
+import { LuPower, LuSearch } from "react-icons/lu";
 import type { User, UserRole } from "../../types/user.types";
 import { useActivateUser, useDeactivateUser } from "../../hooks/useusers";
-
-// ── Filters bar ───────────────────────────────────────────────────────────────
 
 interface FiltersProps {
   search: string;
@@ -36,51 +41,57 @@ export function UserFilters({
   onReset,
 }: FiltersProps) {
   return (
-    <HStack mb={4} gap={3} flexWrap="wrap">
-      <Input
-        placeholder="Search by name or email…"
-        value={search}
-        onChange={(e) => onSearchChange(e.target.value)}
-        maxW="240px"
-      />
+    <Box bg="white" shadow="sm" rounded="xl" p={6} mb={6}>
+      <HStack gap={4} flexWrap="wrap">
+        <InputGroup startElement={<LuSearch size={16} />} maxW="240px">
+          <Input
+            placeholder="Search by name or email ..."
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
+        </InputGroup>
 
-      <NativeSelect.Root maxW="140px">
-        <NativeSelect.Field
-          value={role}
-          onChange={(e) => onRoleChange(e.target.value as UserRole | "")}
-        >
-          <option value="">All roles</option>
-          <option value="admin">Admin</option>
-          <option value="user">User</option>
-        </NativeSelect.Field>
-        <NativeSelect.Indicator />
-      </NativeSelect.Root>
+        <NativeSelect.Root maxW="140px">
+          <NativeSelect.Field
+            value={role}
+            onChange={(e) => onRoleChange(e.target.value as UserRole | "")}
+          >
+            <option value="">All roles</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
 
-      <NativeSelect.Root maxW="150px">
-        <NativeSelect.Field
-          value={isActive === "" ? "" : String(isActive)}
-          onChange={(e) => {
-            const v = e.target.value;
-            onIsActiveChange(v === "" ? "" : v === "true");
-          }}
-        >
-          <option value="">All users</option>
-          <option value="true">Active</option>
-          <option value="false">Inactive</option>
-        </NativeSelect.Field>
-        <NativeSelect.Indicator />
-      </NativeSelect.Root>
+        <NativeSelect.Root maxW="150px">
+          <NativeSelect.Field
+            value={isActive === "" ? "" : String(isActive)}
+            onChange={(e) => {
+              const v = e.target.value;
+              onIsActiveChange(v === "" ? "" : v === "true");
+            }}
+          >
+            <option value="">All users</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </NativeSelect.Field>
+          <NativeSelect.Indicator />
+        </NativeSelect.Root>
 
-      {hasFilters && (
-        <Button size="sm" variant="ghost" colorPalette="red" onClick={onReset}>
-          Clear filters
-        </Button>
-      )}
-    </HStack>
+        {hasFilters && (
+          <Button
+            size="sm"
+            variant="ghost"
+            colorPalette="red"
+            onClick={onReset}
+          >
+            Clear filters
+          </Button>
+        )}
+      </HStack>
+    </Box>
   );
 }
-
-// ── Table ─────────────────────────────────────────────────────────────────────
 
 interface TableProps {
   data: User[] | undefined;
@@ -113,15 +124,64 @@ export function UsersTable({
         </Box>
       )}
 
-      <Table.Root variant="outline" rounded="md">
+      <Table.Root>
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeader>Name</Table.ColumnHeader>
-            <Table.ColumnHeader>Email</Table.ColumnHeader>
-            <Table.ColumnHeader>Role</Table.ColumnHeader>
-            <Table.ColumnHeader>Status</Table.ColumnHeader>
-            <Table.ColumnHeader>Joined</Table.ColumnHeader>
-            <Table.ColumnHeader>Actions</Table.ColumnHeader>
+            <Table.ColumnHeader
+              fontWeight="semibold"
+              color="muted.500"
+              fontSize="xs"
+              textTransform="uppercase"
+              letterSpacing="wider"
+            >
+              Name
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              fontWeight="semibold"
+              color="muted.500"
+              fontSize="xs"
+              textTransform="uppercase"
+              letterSpacing="wider"
+            >
+              Email
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              fontWeight="semibold"
+              color="muted.500"
+              fontSize="xs"
+              textTransform="uppercase"
+              letterSpacing="wider"
+            >
+              Role
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              fontWeight="semibold"
+              color="muted.500"
+              fontSize="xs"
+              textTransform="uppercase"
+              letterSpacing="wider"
+            >
+              Status
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              fontWeight="semibold"
+              color="muted.500"
+              fontSize="xs"
+              textTransform="uppercase"
+              letterSpacing="wider"
+            >
+              Joined
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              textAlign="center"
+              fontWeight="semibold"
+              color="muted.500"
+              fontSize="xs"
+              textTransform="uppercase"
+              letterSpacing="wider"
+            >
+              Actions
+            </Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -141,18 +201,18 @@ export function UsersTable({
                 colSpan={6}
                 textAlign="center"
                 py={8}
-                color="gray.400"
+                color="muted.400"
               >
                 No users found
               </Table.Cell>
             </Table.Row>
           ) : (
             data?.map((user) => (
-              <Table.Row key={user.id}>
-                <Table.Cell fontWeight="medium">
+              <Table.Row key={user.id} transition="background 0.15s" _hover={{ bg: "muted.100" }}>
+                <Table.Cell fontWeight="medium" color="muted.900">
                   {user.firstName} {user.lastName}
                 </Table.Cell>
-                <Table.Cell color="gray.500" fontSize="sm">
+                <Table.Cell color="muted.500" fontSize="sm">
                   {user.email}
                 </Table.Cell>
                 <Table.Cell>
@@ -168,21 +228,36 @@ export function UsersTable({
                     {user.isActive ? "Active" : "Inactive"}
                   </Badge>
                 </Table.Cell>
-                <Table.Cell color="gray.500" fontSize="sm">
+                <Table.Cell color="muted.500" fontSize="sm">
                   {new Date(user.createdAt).toLocaleDateString()}
                 </Table.Cell>
-                <Table.Cell>
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    colorPalette={user.isActive ? "red" : "green"}
-                    loading={isToggling}
-                    onClick={() =>
-                      user.isActive ? deactivate(user.id) : activate(user.id)
-                    }
-                  >
-                    {user.isActive ? "Deactivate" : "Activate"}
-                  </Button>
+                <Table.Cell textAlign="center">
+                  <TooltipRoot>
+                    <TooltipTrigger>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        aria-label={
+                          user.isActive ? "Deactivate user" : "Activate user"
+                        }
+                        colorPalette={user.isActive ? "red" : "green"}
+                        loading={isToggling}
+                        onClick={() =>
+                          user.isActive
+                            ? deactivate(user.id)
+                            : activate(user.id)
+                        }
+                      >
+                        <LuPower size={16} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipPositioner>
+                      <TooltipContent>
+                        <TooltipArrow />
+                        {user.isActive ? "Deactivate" : "Activate"}
+                      </TooltipContent>
+                    </TooltipPositioner>
+                  </TooltipRoot>
                 </Table.Cell>
               </Table.Row>
             ))
@@ -191,21 +266,21 @@ export function UsersTable({
       </Table.Root>
 
       {totalPages > 1 && (
-        <HStack justify="center" mt={4} gap={2}>
+        <HStack justify="center" mt={6} gap={3}>
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             disabled={page === 1}
             onClick={onPrevPage}
           >
             Previous
           </Button>
-          <Text fontSize="sm" color="gray.500">
+          <Text fontSize="sm" color="muted.500">
             Page {page} of {totalPages}
           </Text>
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             disabled={page === totalPages}
             onClick={onNextPage}
           >
