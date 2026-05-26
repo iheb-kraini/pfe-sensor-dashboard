@@ -3,11 +3,14 @@ import {
   Badge,
   Box,
   Button,
+  Flex,
   Heading,
   HStack,
+  Skeleton,
   Table,
   Text,
 } from "@chakra-ui/react";
+import { LuBell } from "react-icons/lu";
 import { useNotifications } from "../../hooks/useNotifications";
 import type {
   Notification,
@@ -113,16 +116,15 @@ export function NotificationsPage() {
         </Table.Header>
         <Table.Body>
           {isLoading ? (
-            <Table.Row>
-              <Table.Cell
-                colSpan={5}
-                textAlign="center"
-                py={8}
-                color="gray.400"
-              >
-                Loading…
-              </Table.Cell>
-            </Table.Row>
+            Array.from({ length: 5 }).map((_, i) => (
+              <Table.Row key={i}>
+                {Array.from({ length: 5 }).map((_, j) => (
+                  <Table.Cell key={j}>
+                    <Skeleton h="20px" rounded="md" />
+                  </Table.Cell>
+                ))}
+              </Table.Row>
+            ))
           ) : notifications.length === 0 ? (
             <Table.Row>
               <Table.Cell
@@ -131,17 +133,20 @@ export function NotificationsPage() {
                 py={8}
                 color="gray.400"
               >
-                No notifications found
+                <Flex direction="column" align="center" gap={2}>
+                  <Box opacity={0.4}><LuBell size={32} /></Box>
+                  <Text fontSize="sm">No notifications found</Text>
+                </Flex>
               </Table.Cell>
             </Table.Row>
           ) : (
-            notifications.map((n) => (
+            notifications.map((n, i) => (
               <Table.Row
                 key={n.id}
                 cursor="pointer"
-                _hover={{ bg: "gray.50" }}
+                _hover={{ bg: "gray.100" }}
                 onClick={() => setSelected(n)}
-                bg={n.state === "unread" ? "orange.50" : undefined}
+                bg={n.state === "unread" ? "orange.50" : i % 2 === 0 ? "white" : "gray.50"}
               >
                 <Table.Cell>
                   <Badge

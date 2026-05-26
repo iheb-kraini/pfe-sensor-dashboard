@@ -1,31 +1,19 @@
-import {
-  Badge,
-  Box,
-  Button,
-  Heading,
-  HStack,
-  Stack,
-  Text,
-  Input,
-} from "@chakra-ui/react";
+import { Box, Button, Heading, HStack, Stack, Text } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useSensorWindows } from "../../hooks/useSensorWindows";
 import { useDevice } from "../../hooks/useDevices";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+import type { SensorWindow } from "../../types/sensorWindow.types";
+import { SensorWindowFilters } from "../../components/sensor-windows/SensorWindowFilters";
+import { SummaryCards } from "../../components/sensor-windows/SummaryCards";
+import { RmsTrendChart } from "../../components/sensor-windows/RmsTrendChart";
+import type { ChartPoint } from "../../components/sensor-windows/RmsTrendChart";
+import { SensorWindowsTable } from "../../components/sensor-windows/SensorWindowsTable";
+import type { WindowRow } from "../../components/sensor-windows/SensorWindowsTable";
 
 type ParsedSample = { x: number; y: number; z: number };
 
-const BUCKET_MINUTES = 2;
+const BUCKET_MINUTES = 10;
 const RANGE_LIMIT = 2000;
 
 const toNumber = (value: unknown): number | null => {
@@ -59,47 +47,123 @@ const normalizeSample = (sample: unknown): ParsedSample | null => {
   return null;
 };
 
-const computeWindowMetrics = (samples: ParsedSample[]) => {
-  if (samples.length === 0) return null;
-
-  let sumX = 0;
-  let sumY = 0;
-  let sumZ = 0;
-  for (const s of samples) {
-    sumX += s.x;
-    sumY += s.y;
-    sumZ += s.z;
-  }
-  const meanX = sumX / samples.length;
-  const meanY = sumY / samples.length;
-  const meanZ = sumZ / samples.length;
-
-  let sumSqX = 0;
-  let sumSqY = 0;
-  let sumSqZ = 0;
-
-  for (const s of samples) {
-    const dx = s.x - meanX;
-    const dy = s.y - meanY;
-    const dz = s.z - meanZ;
-    sumSqX += dx * dx;
-    sumSqY += dy * dy;
-    sumSqZ += dz * dz;
-  }
-
-  const rmsX = Math.sqrt(sumSqX / samples.length);
-  const rmsY = Math.sqrt(sumSqY / samples.length);
-  const rmsZ = Math.sqrt(sumSqZ / samples.length);
-
-  return { rmsX, rmsY, rmsZ };
-};
-
 const formatDateTimeLocal = (date: Date) => {
   const pad = (value: number) => String(value).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
     date.getDate(),
   )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
+
+// ── Single-pass data processing ──────────────────────────────────────────────
+
+interface ProcessedData {
+  perWindow: WindowRow[];
+  chartData: ChartPoint[];
+  maxRms: number;
+  dominantAxis: string;
+  dominantAxisPct: number;
+  coverageHours: number;
+}
+
+function processSensorData(windows: SensorWindow[]): ProcessedData {
+  const perWindow: WindowRow[] = [];
+  let totalRmsMax = 0;
+  let domX = 0;
+  let domY = 0;
+  let domZ = 0;
+
+  const BUCKET_MS = BUCKET_MINUTES * 60 * 1000;
+  const buckets = new Map<
+    number,
+    { sumX: number; sumY: number; sumZ: number; count: number }
+  >();
+
+  for (const w of windows) {
+    const samples: ParsedSample[] = [];
+    for (const raw of w.samples) {
+      const parsed = normalizeSample(raw);
+      if (parsed) samples.push(parsed);
+    }
+    if (samples.length === 0) continue;
+
+    // AC RMS (mean-removed RMS = stddev)
+    let sx = 0, sy = 0, sz = 0;
+    for (const s of samples) { sx += s.x; sy += s.y; sz += s.z; }
+    const mx = sx / samples.length;
+    const my = sy / samples.length;
+    const mz = sz / samples.length;
+
+    let sqx = 0, sqy = 0, sqz = 0;
+    for (const s of samples) {
+      const dx = s.x - mx; sqx += dx * dx;
+      const dy = s.y - my; sqy += dy * dy;
+      const dz = s.z - mz; sqz += dz * dz;
+    }
+
+    const rmsX = Math.sqrt(sqx / samples.length);
+    const rmsY = Math.sqrt(sqy / samples.length);
+    const rmsZ = Math.sqrt(sqz / samples.length);
+
+    totalRmsMax = Math.max(totalRmsMax, rmsX, rmsY, rmsZ);
+    if (rmsX >= rmsY && rmsX >= rmsZ) domX++;
+    else if (rmsY >= rmsX && rmsY >= rmsZ) domY++;
+    else domZ++;
+
+    const time = new Date(w.recordedAt).getTime();
+    perWindow.push({ id: w.id, recordedAt: w.recordedAt, rmsX, rmsY, rmsZ });
+
+    // Bucket
+    const key = Math.floor(time / BUCKET_MS) * BUCKET_MS;
+    const b = buckets.get(key) ?? { sumX: 0, sumY: 0, sumZ: 0, count: 0 };
+    b.sumX += rmsX; b.sumY += rmsY; b.sumZ += rmsZ; b.count += 1;
+    buckets.set(key, b);
+  }
+
+  // Chart data from buckets
+  const chartData: ChartPoint[] = Array.from(buckets.entries())
+    .map(([time, b]) => ({
+      time,
+      rmsX: b.sumX / b.count,
+      rmsY: b.sumY / b.count,
+      rmsZ: b.sumZ / b.count,
+    }))
+    .sort((a, b) => a.time - b.time);
+
+  // Coverage
+  const times = perWindow.map((w) => new Date(w.recordedAt).getTime());
+  const coverageHours =
+    times.length > 1
+      ? (Math.max(...times) - Math.min(...times)) / 3_600_000
+      : 0;
+
+  // Dominant axis
+  const domTotal = domX + domY + domZ;
+  let dominantAxis = "x";
+  let dominantAxisPct = 0;
+  if (domTotal > 0) {
+    if (domX >= domY && domX >= domZ) {
+      dominantAxis = "x";
+      dominantAxisPct = Math.round((domX / domTotal) * 100);
+    } else if (domY >= domX && domY >= domZ) {
+      dominantAxis = "y";
+      dominantAxisPct = Math.round((domY / domTotal) * 100);
+    } else {
+      dominantAxis = "z";
+      dominantAxisPct = Math.round((domZ / domTotal) * 100);
+    }
+  }
+
+  return {
+    perWindow,
+    chartData,
+    maxRms: totalRmsMax,
+    dominantAxis,
+    dominantAxisPct,
+    coverageHours,
+  };
+}
+
+// ── Page ─────────────────────────────────────────────────────────────────────
 
 export function SensorWindowsPage() {
   const { deviceId } = useParams<{ deviceId: string }>();
@@ -108,11 +172,13 @@ export function SensorWindowsPage() {
 
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [rangeHours, setRangeHours] = useState<12 | 24>(24);
   const [appliedFilters, setAppliedFilters] = useState<{
     from?: string;
     to?: string;
   }>({});
+  const [visibleAxes, setVisibleAxes] = useState<Set<string>>(
+    new Set(["rmsX", "rmsY", "rmsZ"]),
+  );
 
   const { data: device } = useDevice(id);
   const { data, isLoading, isError, page, totalPages, nextPage, prevPage } =
@@ -122,80 +188,20 @@ export function SensorWindowsPage() {
       limit: RANGE_LIMIT,
     });
 
-  // Build 2-minute RMS-per-axis buckets for trend view.
-  const metricsData = useMemo(() => {
-    if (!data?.data) return [];
-
-    const buckets = new Map<
-      number,
-      { rmsXSum: number; rmsYSum: number; rmsZSum: number; count: number }
-    >();
-
-    for (const window of data.data) {
-      const parsedSamples = window.samples
-        .map((sample) => normalizeSample(sample))
-        .filter((sample): sample is ParsedSample => sample !== null);
-
-      const metrics = computeWindowMetrics(parsedSamples);
-      if (!metrics) continue;
-
-      const bucketDate = new Date(window.recordedAt);
-      const bucketMinute =
-        Math.floor(bucketDate.getMinutes() / BUCKET_MINUTES) * BUCKET_MINUTES;
-      bucketDate.setMinutes(bucketMinute, 0, 0);
-      const key = bucketDate.getTime();
-
-      const bucket = buckets.get(key) ?? {
-        rmsXSum: 0,
-        rmsYSum: 0,
-        rmsZSum: 0,
-        count: 0,
-      };
-      bucket.rmsXSum += metrics.rmsX;
-      bucket.rmsYSum += metrics.rmsY;
-      bucket.rmsZSum += metrics.rmsZ;
-      bucket.count += 1;
-      buckets.set(key, bucket);
-    }
-
-    return Array.from(buckets.entries())
-      .map(([time, bucket]) => ({
-        time,
-        rmsX: bucket.rmsXSum / bucket.count,
-        rmsY: bucket.rmsYSum / bucket.count,
-        rmsZ: bucket.rmsZSum / bucket.count,
-        count: bucket.count,
-      }))
-      .sort((a, b) => a.time - b.time);
-  }, [data]);
-
-  const formatBucketTime = (ms: number) => {
-    const d = new Date(ms);
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    const hour = String(d.getHours()).padStart(2, "0");
-    const minute = String(d.getMinutes()).padStart(2, "0");
-    return `${month}/${day} ${hour}:${minute}`;
-  };
-
-  const formatTooltipTime = (ms: number) => new Date(ms).toISOString();
-
-  const applyRange = useCallback((hours: 12 | 24) => {
+  // Initialize 24h range on mount only (no re-runs).
+  const applyRange = useCallback((hours: number) => {
     const now = new Date();
     const fromDate = new Date(now.getTime() - hours * 60 * 60 * 1000);
     const nextFrom = formatDateTimeLocal(fromDate);
     const nextTo = formatDateTimeLocal(now);
     setFrom(nextFrom);
     setTo(nextTo);
-    setAppliedFilters({
-      from: nextFrom,
-      to: nextTo,
-    });
+    setAppliedFilters({ from: nextFrom, to: nextTo });
   }, []);
 
   useEffect(() => {
-    applyRange(rangeHours);
-  }, [applyRange, rangeHours]);
+    applyRange(24);
+  }, [applyRange]);
 
   const handleApplyFilters = () => {
     setAppliedFilters({
@@ -205,10 +211,38 @@ export function SensorWindowsPage() {
   };
 
   const handleResetFilters = () => {
-    applyRange(rangeHours);
+    applyRange(24);
+  };
+
+  const handleRangePreset = (hours: number) => {
+    applyRange(hours);
+  };
+
+  const handleToggleAxis = (axis: string) => {
+    setVisibleAxes((prev) => {
+      const next = new Set(prev);
+      if (next.has(axis)) next.delete(axis);
+      else next.add(axis);
+      return next;
+    });
   };
 
   const hasFilters = !!appliedFilters.from || !!appliedFilters.to;
+
+  // Single-pass processing: per-window RMS, bucketed chart, summary
+  const processed = useMemo<ProcessedData>(() => {
+    if (!data?.data || data.data.length === 0) {
+      return {
+        perWindow: [],
+        chartData: [],
+        maxRms: 0,
+        dominantAxis: "",
+        dominantAxisPct: 0,
+        coverageHours: 0,
+      };
+    }
+    return processSensorData(data.data);
+  }, [data]);
 
   return (
     <Box p={6}>
@@ -234,51 +268,18 @@ export function SensorWindowsPage() {
       </HStack>
 
       {/* Filters */}
-      <HStack mb={6} gap={3} flexWrap="wrap">
-        <Stack gap={1}>
-          <Text fontSize="xs" color="gray.500" fontWeight="medium">
-            From
-          </Text>
-          <Input
-            type="datetime-local"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            maxW="220px"
-            size="sm"
-          />
-        </Stack>
-        <Stack gap={1}>
-          <Text fontSize="xs" color="gray.500" fontWeight="medium">
-            To
-          </Text>
-          <Input
-            type="datetime-local"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-            maxW="220px"
-            size="sm"
-          />
-        </Stack>
-        <Button
-          size="sm"
-          colorPalette="blue"
-          alignSelf="flex-end"
-          onClick={handleApplyFilters}
-        >
-          Apply
-        </Button>
-        {hasFilters && (
-          <Button
-            size="sm"
-            variant="ghost"
-            colorPalette="red"
-            alignSelf="flex-end"
-            onClick={handleResetFilters}
-          >
-            Clear
-          </Button>
-        )}
-      </HStack>
+      <Stack mb={6} gap={4}>
+        <SensorWindowFilters
+          from={from}
+          to={to}
+          hasFilters={hasFilters}
+          onFromChange={setFrom}
+          onToChange={setTo}
+          onApply={handleApplyFilters}
+          onClear={handleResetFilters}
+          onRangePreset={handleRangePreset}
+        />
+      </Stack>
 
       {isError && (
         <Box bg="red.50" color="red.600" px={4} py={3} rounded="md" mb={4}>
@@ -286,148 +287,40 @@ export function SensorWindowsPage() {
         </Box>
       )}
 
-      {/* Summary badges */}
-      {data && (
-        <HStack mb={4} gap={3} flexWrap="wrap">
-          <Badge colorPalette="blue">{data.data.length} windows</Badge>
-          <Badge colorPalette="gray">
-            {metricsData.length} buckets ({BUCKET_MINUTES}-min, last{" "}
-            {rangeHours}h)
-          </Badge>
-        </HStack>
-      )}
-
-      {data && (
-        <HStack mb={4} gap={2} flexWrap="wrap">
-          <Text fontSize="sm" color="gray.500">
-            Range
-          </Text>
-          <Button
-            size="xs"
-            variant={rangeHours === 24 ? "solid" : "outline"}
-            colorPalette="blue"
-            onClick={() => setRangeHours(24)}
-          >
-            24h
-          </Button>
-          <Button
-            size="xs"
-            variant={rangeHours === 12 ? "solid" : "outline"}
-            onClick={() => setRangeHours(12)}
-          >
-            12h
-          </Button>
-        </HStack>
-      )}
-
-      {/* Chart */}
-      <Box
-        bg="white"
-        rounded="lg"
-        shadow="sm"
-        border="1px solid"
-        borderColor="gray.200"
-        p={4}
-        mb={6}
-      >
-        {isLoading ? (
-          <Box textAlign="center" py={16} color="gray.400">
-            Loading...
-          </Box>
-        ) : metricsData.length === 0 ? (
-          <Box textAlign="center" py={16} color="gray.400">
-            No metric data found
-          </Box>
-        ) : (
-          <ResponsiveContainer width="100%" height={380}>
-            <LineChart
-              data={metricsData}
-              margin={{ top: 8, right: 24, left: 0, bottom: 8 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis
-                dataKey="time"
-                type="number"
-                domain={["dataMin", "dataMax"]}
-                scale="time"
-                tickFormatter={formatBucketTime}
-                tick={{ fontSize: 11 }}
-                minTickGap={80}
-              />
-              <YAxis
-                tick={{ fontSize: 11 }}
-                label={{
-                  value: "m/s^2",
-                  angle: -90,
-                  position: "insideLeft",
-                  offset: 10,
-                  style: { fontSize: 11, fill: "#888" },
-                }}
-              />
-              <Tooltip
-                labelFormatter={(label) => formatTooltipTime(Number(label))}
-                formatter={(value, name) => [
-                  `${Number(value).toFixed(4)} m/s^2`,
-                  String(name).toUpperCase(),
-                ]}
-                contentStyle={{ fontSize: 12 }}
-              />
-              <Legend
-                formatter={(value) => value.toUpperCase()}
-                wrapperStyle={{ fontSize: 13 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="rmsX"
-                stroke="#3B82F6"
-                strokeWidth={1.5}
-                dot={false}
-                activeDot={{ r: 3 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="rmsY"
-                stroke="#10B981"
-                strokeWidth={1.5}
-                dot={false}
-                activeDot={{ r: 3 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="rmsZ"
-                stroke="#F59E0B"
-                strokeWidth={1.5}
-                dot={false}
-                activeDot={{ r: 3 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+      {/* Summary cards */}
+      <Box mb={6}>
+        {data && (
+          <SummaryCards
+            totalWindows={processed.perWindow.length}
+            maxRms={processed.maxRms}
+            dominantAxis={processed.dominantAxis}
+            dominantAxisPct={processed.dominantAxisPct}
+            coverageHours={processed.coverageHours}
+            isLoading={isLoading}
+          />
         )}
       </Box>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <HStack justify="center" mt={4} gap={2}>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={page === 1}
-            onClick={prevPage}
-          >
-            Previous
-          </Button>
-          <Text fontSize="sm" color="gray.500">
-            Page {page} of {totalPages}
-          </Text>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={page === totalPages}
-            onClick={nextPage}
-          >
-            Next
-          </Button>
-        </HStack>
+      {/* Chart */}
+      <Box mb={6}>
+        <RmsTrendChart
+          data={processed.chartData}
+          visibleAxes={visibleAxes}
+          onToggleAxis={handleToggleAxis}
+          isLoading={isLoading}
+        />
+      </Box>
+
+      {/* Table */}
+      {data && (
+        <SensorWindowsTable
+          windows={processed.perWindow}
+          page={page}
+          totalPages={totalPages}
+          isLoading={isLoading}
+          onPrevPage={prevPage}
+          onNextPage={nextPage}
+        />
       )}
     </Box>
   );

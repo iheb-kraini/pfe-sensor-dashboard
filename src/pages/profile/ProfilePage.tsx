@@ -10,6 +10,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useAuthStore } from "../../store/auth.store";
+import { LuShield, LuUser } from "react-icons/lu";
 
 export function ProfilePage() {
   const user = useAuthStore((s) => s.user);
@@ -18,11 +19,13 @@ export function ProfilePage() {
 
   return (
     <Center>
-      <Box p={6} maxW="500px">
+      <Box maxW="520px" w="full">
         <Heading size="lg" mb={6}>
           Profile
         </Heading>
-        <Card.Root variant="outline">
+        <Card.Root variant="outline" position="relative" overflow="hidden">
+          {/* Accent header bar */}
+          <Box h="4px" bg="linear-gradient(90deg, blue.400, purple.400)" />
           <Card.Body>
             <Stack gap={6}>
               {/* Avatar + name */}
@@ -41,7 +44,11 @@ export function ProfilePage() {
                     colorPalette={user.role === "admin" ? "purple" : "blue"}
                     w="fit-content"
                     textTransform="capitalize"
+                    display="flex"
+                    alignItems="center"
+                    gap={1}
                   >
+                    {user.role === "admin" ? <LuShield size={12} /> : <LuUser size={12} />}
                     {user.role}
                   </Badge>
                 </Stack>
