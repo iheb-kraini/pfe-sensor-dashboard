@@ -1,5 +1,6 @@
-import { Badge, Box, Button, HStack, Table, Text, VStack } from "@chakra-ui/react";
+import { Badge, Box, Button, Flex, HStack, Skeleton, Table, Text, VStack } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import { LuActivity } from "react-icons/lu";
 
 export interface WindowRow {
   id: number;
@@ -94,13 +95,16 @@ export function SensorWindowsTable({
       {/* Mobile: cards */}
       <Box display={{ base: "block", lg: "none" }}>
         {isLoading ? (
-          <Text textAlign="center" py={8} color="gray.400">
-            Loading...
-          </Text>
+          <VStack gap={3}>
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} h="120px" rounded="xl" w="full" />
+            ))}
+          </VStack>
         ) : windows.length === 0 ? (
-          <Text textAlign="center" py={8} color="gray.400">
-            No windows in this range
-          </Text>
+          <Flex direction="column" align="center" py={10} color="gray.400" gap={3}>
+            <Box opacity={0.4}><LuActivity size={36} /></Box>
+            <Text fontSize="sm">No windows in this range</Text>
+          </Flex>
         ) : (
           <VStack gap={3} align="stretch">
             {windows.map((row) => (
@@ -125,16 +129,15 @@ export function SensorWindowsTable({
           </Table.Header>
           <Table.Body>
             {isLoading ? (
-              <Table.Row>
-                <Table.Cell
-                  colSpan={6}
-                  textAlign="center"
-                  py={8}
-                  color="gray.400"
-                >
-                  Loading...
-                </Table.Cell>
-              </Table.Row>
+              Array.from({ length: 5 }).map((_, i) => (
+                <Table.Row key={i}>
+                  {Array.from({ length: 6 }).map((_, j) => (
+                    <Table.Cell key={j}>
+                      <Skeleton h="20px" rounded="md" />
+                    </Table.Cell>
+                  ))}
+                </Table.Row>
+              ))
             ) : windows.length === 0 ? (
               <Table.Row>
                 <Table.Cell
@@ -143,18 +146,22 @@ export function SensorWindowsTable({
                   py={8}
                   color="gray.400"
                 >
-                  No windows in this range
+                  <Flex direction="column" align="center" gap={2}>
+                    <Box opacity={0.4}><LuActivity size={28} /></Box>
+                    <Text fontSize="sm">No windows in this range</Text>
+                  </Flex>
                 </Table.Cell>
               </Table.Row>
             ) : (
-              windows.map((w) => {
+              windows.map((w, i) => {
                 const severity = getSeverityLabel(w.rmsX, w.rmsY, w.rmsZ);
                 return (
                   <Table.Row
                     key={w.id}
                     cursor="pointer"
-                    _hover={{ bg: "gray.50" }}
+                    _hover={{ bg: "gray.100" }}
                     onClick={() => handleSelect(w.id)}
+                    bg={i % 2 === 0 ? "white" : "gray.50"}
                   >
                     <Table.Cell color="gray.400" fontSize="sm">
                       {w.id}

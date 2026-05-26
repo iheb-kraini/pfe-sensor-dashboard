@@ -5,10 +5,12 @@ import {
   Flex,
   Heading,
   HStack,
+  Skeleton,
   Table,
   Text,
   VStack,
 } from "@chakra-ui/react";
+import { LuRadio } from "react-icons/lu";
 import { DeviceFormModal } from "../../components/devices/DeviceFormModal";
 import {
   useActivateDevice,
@@ -185,13 +187,16 @@ export function DevicesPage() {
       {/* ── Mobile: cards (base → sm) ── */}
       <Box display={{ base: "block", lg: "none" }}>
         {isLoading ? (
-          <Text textAlign="center" py={8} color="gray.400">
-            Loading...
-          </Text>
+          <VStack gap={3}>
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} h="150px" rounded="xl" w="full" />
+            ))}
+          </VStack>
         ) : isEmpty ? (
-          <Text textAlign="center" py={8} color="gray.400">
-            No devices found
-          </Text>
+          <Flex direction="column" align="center" py={10} color="gray.400" gap={3}>
+            <Box opacity={0.4}><LuRadio size={40} /></Box>
+            <Text fontSize="sm">No devices found</Text>
+          </Flex>
         ) : (
           <VStack gap={3} align="stretch">
             {data?.data.map((device) => (
@@ -287,11 +292,15 @@ function TableContent({
       </Table.Header>
       <Table.Body>
         {isLoading ? (
-          <Table.Row>
-            <Table.Cell colSpan={6} textAlign="center" py={8} color="gray.400">
-              Loading...
-            </Table.Cell>
-          </Table.Row>
+          Array.from({ length: 5 }).map((_, i) => (
+            <Table.Row key={i}>
+              {Array.from({ length: 6 }).map((_, j) => (
+                <Table.Cell key={j}>
+                  <Skeleton h="20px" rounded="md" />
+                </Table.Cell>
+              ))}
+            </Table.Row>
+          ))
         ) : isEmpty ? (
           <Table.Row>
             <Table.Cell colSpan={6} textAlign="center" py={8} color="gray.400">
@@ -299,8 +308,8 @@ function TableContent({
             </Table.Cell>
           </Table.Row>
         ) : (
-          data?.data.map((device: Device) => (
-            <Table.Row key={device.id}>
+          data?.data.map((device: Device, i: number) => (
+            <Table.Row key={device.id} bg={i % 2 === 0 ? "white" : "gray.50"}>
               <Table.Cell fontWeight="medium">{device.name}</Table.Cell>
               <Table.Cell color="gray.500" fontSize="sm">
                 {device.serialNumber}

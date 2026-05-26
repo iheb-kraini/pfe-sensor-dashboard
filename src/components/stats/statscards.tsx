@@ -1,4 +1,6 @@
 import { Box, Grid, Skeleton, Text } from "@chakra-ui/react";
+import type { ReactNode } from "react";
+import { LuUsers, LuUserCheck, LuRadio, LuBellRing } from "react-icons/lu";
 
 interface StatCardProps {
   label: string;
@@ -6,7 +8,7 @@ interface StatCardProps {
   sub?: string;
   subValue?: number;
   accent: string;
-  icon: string;
+  icon: ReactNode;
   isLoading: boolean;
 }
 
@@ -41,9 +43,9 @@ function StatCard({
         rounded="full"
       />
 
-      <Text fontSize="xl" mb={3}>
+      <Box mb={3} color="gray.600">
         {icon}
-      </Text>
+      </Box>
 
       {isLoading ? (
         <>
@@ -104,7 +106,7 @@ export function StatsCards({
       mb={8}
     >
       <StatCard
-        icon="👥"
+        icon={<LuUsers size={22} />}
         label="Total Users"
         value={totalUsers}
         sub="active"
@@ -113,7 +115,7 @@ export function StatsCards({
         isLoading={isLoading}
       />
       <StatCard
-        icon="✅"
+        icon={<LuUserCheck size={22} />}
         label="Active Users"
         value={activeUsers}
         sub={`of ${totalUsers} total`}
@@ -122,7 +124,7 @@ export function StatsCards({
         isLoading={isLoading}
       />
       <StatCard
-        icon="📡"
+        icon={<LuRadio size={22} />}
         label="Total Devices"
         value={totalDevices}
         sub="online"
@@ -131,7 +133,7 @@ export function StatsCards({
         isLoading={isLoading}
       />
       <StatCard
-        icon="🔔"
+        icon={<LuBellRing size={22} />}
         label="Total Alerts"
         value={totalAlerts}
         sub="unopened"

@@ -1,4 +1,4 @@
-import { Box, HStack, Text } from "@chakra-ui/react";
+import { Box, HStack, Skeleton, Text } from "@chakra-ui/react";
 import {
   CartesianGrid,
   Legend,
@@ -78,9 +78,7 @@ export function RmsTrendChart({
       </HStack>
 
       {isLoading ? (
-        <Box textAlign="center" py={16} color="gray.400">
-          Loading...
-        </Box>
+        <Skeleton height="380px" rounded="lg" />
       ) : data.length === 0 ? (
         <Box textAlign="center" py={16} color="gray.400">
           No metric data found

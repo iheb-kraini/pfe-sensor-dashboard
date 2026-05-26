@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useNotificationStore } from "../../store/notification.store";
 import { useNotifications } from "../../hooks/useNotifications";
 import { NotificationItem } from "./NotificationItem";
+import { LuBell } from "react-icons/lu";
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -17,9 +18,7 @@ export function NotificationBell() {
     <Popover.Root open={open} onOpenChange={(e) => setOpen(e.open)}>
       <Popover.Trigger asChild>
         <Box position="relative" cursor="pointer">
-          <Box fontSize="xl" lineHeight={1} userSelect="none">
-            🔔
-          </Box>
+          <LuBell size={20} />
           {unreadCount > 0 && (
             <Flex
               position="absolute"
