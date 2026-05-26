@@ -38,64 +38,37 @@ export function LoginPage() {
       display="flex"
       alignItems="center"
       justifyContent="center"
-      bg="linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1a365d 100%)"
-      position="relative"
-      overflow="hidden"
+      bg="#1a1d23"
     >
-      {/* Decorative circles */}
-      <Box
-        position="absolute"
-        top="-120px"
-        right="-120px"
-        w="360px"
-        h="360px"
-        rounded="full"
-        bg="blue.500"
-        opacity={0.08}
-      />
-      <Box
-        position="absolute"
-        bottom="-80px"
-        left="-80px"
-        w="240px"
-        h="240px"
-        rounded="full"
-        bg="blue.400"
-        opacity={0.06}
-      />
-
       <Box
         as="form"
         onSubmit={handleSubmit(onSubmit)}
         bg="white"
-        p={8}
+        p={10}
         rounded="xl"
         shadow="xl"
         w="full"
         maxW="400px"
-        position="relative"
       >
         <Stack gap={6}>
-          {/* Logo */}
           <Stack gap={3} align="center" mb={2}>
             <Box
               w="48px"
               h="48px"
-              bg="blue.600"
+              bg="accent"
               rounded="xl"
               display="flex"
               alignItems="center"
               justifyContent="center"
               color="white"
-              shadow="md"
             >
               <LuRadio size={24} />
             </Box>
             <Stack gap={0} align="center">
-              <Heading size="lg" color="gray.800">
+              <Heading size="lg" color="muted.900" fontWeight="extrabold">
                 RailMonitor
               </Heading>
-              <Text color="gray.400" fontSize="sm">
+              <Text color="muted.400" fontSize="sm">
                 Sign in to your account
               </Text>
             </Stack>

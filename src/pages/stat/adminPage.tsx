@@ -13,7 +13,6 @@ import { UserCards } from "../../components/Users/UserCard";
 export function AdminPage() {
   const stats = useAdminStats();
   const { open, openCreate, onClose } = useUserModal();
-  // filters
   const [search, setSearch] = useState("");
   const [role, setRole] = useState<UserRole | "">("");
   const [isActive, setIsActive] = useState<boolean | "">("");
@@ -37,16 +36,14 @@ export function AdminPage() {
     useUsers(filters);
 
   return (
-    <Box p={{ base: 2, md: 6 }}>
-      {/* Header */}
+    <Box>
       <Box mb={6}>
-        <Heading size="lg">Admin Panel</Heading>
-        <Text color="gray.500" fontSize="sm" mt={1}>
+        <Heading size="xl" fontWeight="extrabold" color="muted.900">Admin Panel</Heading>
+        <Text color="muted.400" fontSize="sm" mt={1}>
           System overview and user management
         </Text>
       </Box>
 
-      {/* Stats */}
       <StatsCards
         totalUsers={stats.totalUsers}
         activeUsers={stats.activeUsers}
@@ -57,19 +54,9 @@ export function AdminPage() {
         isLoading={stats.isLoading}
       />
 
-      {/* Users section */}
-      <Box
-        bg="white"
-        rounded="xl"
-        borderWidth="1px"
-        borderColor="gray.100"
-        shadow="sm"
-        p={5}
-      >
+      <Box bg="white" rounded="xl" shadow="sm" p={6}>
         <HStack justify="space-between" mb={6}>
-          <Heading size="md" mb={4}>
-            Users
-          </Heading>
+          <Heading size="lg" fontWeight="bold" color="muted.900">Users</Heading>
           <Button colorPalette="blue" onClick={openCreate}>
             + New User
           </Button>

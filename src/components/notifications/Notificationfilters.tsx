@@ -30,8 +30,8 @@ export function NotificationFilters({
   onReset,
 }: Props) {
   return (
-    <Box bg="white" shadow="sm" rounded="xl" p={4} mb={6}>
-      <HStack gap={3} flexWrap="wrap">
+    <Box bg="white" shadow="sm" rounded="xl" p={6} mb={6}>
+      <HStack gap={4} flexWrap="wrap">
         <NativeSelect.Root maxW="180px">
           <NativeSelect.Field
             value={state}

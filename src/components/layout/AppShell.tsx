@@ -11,21 +11,14 @@ export function AppShell() {
   useMqttNotifications();
 
   return (
-    <Flex
-      h="100vh"
-      overflow="hidden"
-      bg="linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%)"
-    >
-      {/* Sidebar — never scrolls, stays full height */}
+    <Flex h="100vh" overflow="hidden" bg="surface.page">
       <Box display={{ base: "none", md: "flex" }} flexShrink={0}>
         <Sidebar />
       </Box>
       <MobileSidebar />
-
-      {/* Right side: topbar + scrollable content */}
       <Flex direction="column" flex={1} overflow="hidden">
         <Topbar />
-        <Box as="main" flex={1} overflowY="auto" px={6} pt={6} pb={8}>
+        <Box as="main" flex={1} overflowY="auto" px={8} pt={6} pb={8}>
           <Outlet />
         </Box>
       </Flex>

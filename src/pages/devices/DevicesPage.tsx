@@ -64,9 +64,9 @@ export function DevicesPage() {
   const isEmpty = !isLoading && data?.data.length === 0;
 
   return (
-    <Box p={{ base: 4, md: 6 }}>
+    <Box>
       <HStack justify="space-between" mb={6}>
-        <Heading size={{ base: "md", md: "lg" }}>Devices</Heading>
+        <Heading size="xl" fontWeight="extrabold" color="muted.900">Devices</Heading>
         <Button
           size={{ base: "sm", md: "md" }}
           colorPalette="blue"
@@ -93,7 +93,6 @@ export function DevicesPage() {
         </Box>
       )}
 
-      {/* Mobile: cards (base → lg) */}
       <Box display={{ base: "block", lg: "none" }}>
         {isLoading ? (
           <VStack gap={3}>
@@ -102,7 +101,7 @@ export function DevicesPage() {
             ))}
           </VStack>
         ) : isEmpty ? (
-          <Flex direction="column" align="center" py={10} color="gray.400" gap={3}>
+          <Flex direction="column" align="center" py={10} color="muted.400" gap={3}>
             <Box opacity={0.4}><LuRadio size={40} /></Box>
             <Text fontSize="sm">No devices found</Text>
           </Flex>
@@ -122,9 +121,8 @@ export function DevicesPage() {
         )}
       </Box>
 
-      {/* Desktop: table (lg+) */}
       <Box display={{ base: "none", lg: "block" }}>
-        <Table.Root variant="outline" rounded="md">
+        <Table.Root>
           <DevicesTable
             data={data}
             isLoading={isLoading}
@@ -142,23 +140,22 @@ export function DevicesPage() {
         </Table.Root>
       </Box>
 
-      {/* Pagination */}
       {totalPages > 1 && (
-        <HStack justify="center" mt={4} gap={2}>
+        <HStack justify="center" mt={6} gap={3}>
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             disabled={page === 1}
             onClick={prevPage}
           >
             Previous
           </Button>
-          <Text fontSize="sm" color="gray.500">
+          <Text fontSize="sm" color="muted.500">
             Page {page} of {totalPages}
           </Text>
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             disabled={page === totalPages}
             onClick={nextPage}
           >

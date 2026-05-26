@@ -29,11 +29,11 @@ export function SensorWindowFilters({
   onRangePreset,
 }: Props) {
   return (
-    <Box bg="white" shadow="sm" rounded="xl" p={4} mb={6}>
+    <Box bg="white" shadow="sm" rounded="xl" p={6} mb={6}>
       <Stack gap={3}>
-        <HStack gap={2} flexWrap="wrap">
+        <HStack gap={4} flexWrap="wrap">
           <Stack gap={1}>
-            <Text fontSize="xs" color="gray.500" fontWeight="medium">
+            <Text fontSize="xs" color="muted.500" fontWeight="medium">
               From
             </Text>
             <Input
@@ -45,7 +45,7 @@ export function SensorWindowFilters({
             />
           </Stack>
           <Stack gap={1}>
-            <Text fontSize="xs" color="gray.500" fontWeight="medium">
+            <Text fontSize="xs" color="muted.500" fontWeight="medium">
               To
             </Text>
             <Input
@@ -77,7 +77,7 @@ export function SensorWindowFilters({
           )}
         </HStack>
         <HStack gap={2}>
-          <Text fontSize="xs" color="gray.500" fontWeight="medium">
+          <Text fontSize="xs" color="muted.500" fontWeight="medium">
             Quick:
           </Text>
           {RANGE_PRESETS.map(({ label, hours }) => (

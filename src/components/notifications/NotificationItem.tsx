@@ -30,9 +30,9 @@ export function NotificationItem({ notification, onStateChange }: Props) {
       px={4}
       py={3}
       borderBottom="1px solid"
-      borderColor="gray.100"
-      bg={notification.state === NotificationState.UNREAD ? "blue.50" : "white"}
-      _hover={{ bg: "gray.50" }}
+      borderColor="muted.100"
+      bg={notification.state === NotificationState.UNREAD ? "yellow.50" : "white"}
+      _hover={{ bg: "muted.50" }}
       transition="all 0.15s"
     >
       <Flex justify="space-between" align="flex-start" gap={2}>
@@ -52,20 +52,19 @@ export function NotificationItem({ notification, onStateChange }: Props) {
               {notification.state.replace("_", " ")}
             </Badge>
             {notification.device && (
-              <Text fontSize="xs" color="gray.500">
+              <Text fontSize="xs" color="muted.500">
                 {notification.device.name}
               </Text>
             )}
           </Flex>
-          <Text fontSize="sm" color="gray.800" fontWeight="medium">
+          <Text fontSize="sm" color="muted.900" fontWeight="medium">
             {notification.message}
           </Text>
-          <Text fontSize="xs" color="gray.400" mt={1}>
+          <Text fontSize="xs" color="muted.400" mt={1}>
             {new Date(notification.createdAt).toLocaleString()}
           </Text>
         </Box>
 
-        {/* state actions */}
         {onStateChange && notification.state === NotificationState.UNREAD && (
           <Flex gap={1} flexShrink={0}>
             <Box
@@ -94,11 +93,11 @@ export function NotificationItem({ notification, onStateChange }: Props) {
               px={2}
               py={1}
               rounded="md"
-              bg="gray.100"
-              color="gray.600"
+              bg="muted.100"
+              color="muted.600"
               fontWeight="semibold"
               cursor="pointer"
-              _hover={{ bg: "gray.200" }}
+              _hover={{ bg: "muted.200" }}
               onClick={() =>
                 onStateChange(notification.id, NotificationState.DISMISSED)
               }

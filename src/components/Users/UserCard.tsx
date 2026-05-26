@@ -48,7 +48,7 @@ export function UserCards({
           ))}
         </VStack>
       ) : data?.length === 0 ? (
-        <Box textAlign="center" py={10} color="gray.400" fontSize="sm">
+        <Box textAlign="center" py={10} color="muted.400" fontSize="sm">
           No users found
         </Box>
       ) : (
@@ -56,16 +56,13 @@ export function UserCards({
           {data?.map((user) => (
             <Box
               key={user.id}
-              borderWidth="1px"
-              borderColor="gray.200"
               rounded="lg"
-              p={4}
+              p={5}
               bg="white"
-              shadow="xs"
+              shadow="sm"
             >
-              {/* Name + status */}
               <HStack justify="space-between" mb={1}>
-                <Text fontWeight="semibold" fontSize="sm" truncate>
+                <Text fontWeight="semibold" fontSize="sm" truncate color="muted.900">
                   {user.firstName} {user.lastName}
                 </Text>
                 <Badge
@@ -76,12 +73,10 @@ export function UserCards({
                 </Badge>
               </HStack>
 
-              {/* Email */}
-              <Text fontSize="xs" color="gray.500" mb={3} truncate>
+              <Text fontSize="xs" color="muted.500" mb={3} truncate>
                 {user.email}
               </Text>
 
-              {/* Role + joined + action */}
               <HStack justify="space-between" align="center">
                 <HStack gap={2}>
                   <Badge
@@ -90,7 +85,7 @@ export function UserCards({
                   >
                     {user.role}
                   </Badge>
-                  <Text fontSize="xs" color="gray.400">
+                  <Text fontSize="xs" color="muted.400">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </Text>
                 </HStack>
@@ -113,21 +108,21 @@ export function UserCards({
       )}
 
       {totalPages > 1 && (
-        <HStack justify="center" mt={4} gap={2}>
+        <HStack justify="center" mt={6} gap={3}>
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             disabled={page === 1}
             onClick={onPrevPage}
           >
             Previous
           </Button>
-          <Text fontSize="sm" color="gray.500">
+          <Text fontSize="sm" color="muted.500">
             Page {page} of {totalPages}
           </Text>
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             disabled={page === totalPages}
             onClick={onNextPage}
           >

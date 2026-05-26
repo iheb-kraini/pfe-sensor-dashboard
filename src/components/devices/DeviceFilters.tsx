@@ -24,8 +24,8 @@ export function DeviceFilters({
   onReset,
 }: Props) {
   return (
-    <Box bg="white" shadow="sm" rounded="xl" p={4} mb={6}>
-      <HStack gap={3} flexWrap="wrap">
+    <Box bg="white" shadow="sm" rounded="xl" p={6} mb={6}>
+      <HStack gap={4} flexWrap="wrap">
         <InputGroup startElement={<LuSearch size={16} />} maxW="220px">
           <Input
             placeholder="Search by name..."

@@ -15,14 +15,12 @@ export function Topbar() {
       h="60px"
       bg="white"
       borderBottom="1px solid"
-      borderColor="gray.200"
-      px={6}
+      borderColor="muted.200"
+      px={8}
       flexShrink={0}
-      shadow="sm"
     >
       <Flex h="full" align="center" justify="space-between">
         <Flex align="center" gap={3}>
-          {/* Hamburger — mobile only */}
           <IconButton
             display={{ base: "flex", md: "none" }}
             aria-label="Open menu"
@@ -33,35 +31,25 @@ export function Topbar() {
             <LuMenu />
           </IconButton>
 
-          {/* Live dot */}
-          <Box
-            w="6px"
-            h="6px"
-            rounded="full"
-            bg="green.400"
-            boxShadow="0 0 6px rgba(74,222,128,0.5)"
-            animation="pulse 2s infinite"
-          />
-
           <Text
             fontSize="sm"
-            color="gray.600"
+            color="muted.500"
             display={{ base: "none", sm: "block" }}
           >
             Welcome back,{" "}
-            <Text as="span" fontWeight="semibold" color="gray.800">
+            <Text as="span" fontWeight="semibold" color="muted.900">
               {user?.firstName} {user?.lastName}
             </Text>
           </Text>
         </Flex>
 
-        <Flex align="center" gap={3}>
+        <Flex align="center" gap={4}>
           <Flex
             px={2.5}
             py={1.5}
             rounded="md"
-            bg={user?.role === "admin" ? "purple.100" : "blue.100"}
-            color={user?.role === "admin" ? "purple.700" : "blue.700"}
+            bg="muted.100"
+            color="muted.600"
             fontSize="xs"
             fontWeight="semibold"
             align="center"

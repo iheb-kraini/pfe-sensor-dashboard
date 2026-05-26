@@ -19,8 +19,6 @@ import { LuPower, LuSearch } from "react-icons/lu";
 import type { User, UserRole } from "../../types/user.types";
 import { useActivateUser, useDeactivateUser } from "../../hooks/useusers";
 
-// ── Filters bar ───────────────────────────────────────────────────────────────
-
 interface FiltersProps {
   search: string;
   role: UserRole | "";
@@ -43,11 +41,11 @@ export function UserFilters({
   onReset,
 }: FiltersProps) {
   return (
-    <Box bg="white" shadow="sm" rounded="xl" p={4} mb={6}>
-      <HStack gap={3} flexWrap="wrap">
+    <Box bg="white" shadow="sm" rounded="xl" p={6} mb={6}>
+      <HStack gap={4} flexWrap="wrap">
         <InputGroup startElement={<LuSearch size={16} />} maxW="240px">
           <Input
-            placeholder="Search by name or email…"
+            placeholder="Search by name or email ..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
           />
@@ -81,7 +79,12 @@ export function UserFilters({
         </NativeSelect.Root>
 
         {hasFilters && (
-          <Button size="sm" variant="ghost" colorPalette="red" onClick={onReset}>
+          <Button
+            size="sm"
+            variant="ghost"
+            colorPalette="red"
+            onClick={onReset}
+          >
             Clear filters
           </Button>
         )}
@@ -89,8 +92,6 @@ export function UserFilters({
     </Box>
   );
 }
-
-// ── Table ─────────────────────────────────────────────────────────────────────
 
 interface TableProps {
   data: User[] | undefined;
@@ -123,15 +124,64 @@ export function UsersTable({
         </Box>
       )}
 
-      <Table.Root variant="outline" rounded="md">
+      <Table.Root>
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeader>Name</Table.ColumnHeader>
-            <Table.ColumnHeader>Email</Table.ColumnHeader>
-            <Table.ColumnHeader>Role</Table.ColumnHeader>
-            <Table.ColumnHeader>Status</Table.ColumnHeader>
-            <Table.ColumnHeader>Joined</Table.ColumnHeader>
-            <Table.ColumnHeader textAlign="center">Actions</Table.ColumnHeader>
+            <Table.ColumnHeader
+              fontWeight="semibold"
+              color="muted.500"
+              fontSize="xs"
+              textTransform="uppercase"
+              letterSpacing="wider"
+            >
+              Name
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              fontWeight="semibold"
+              color="muted.500"
+              fontSize="xs"
+              textTransform="uppercase"
+              letterSpacing="wider"
+            >
+              Email
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              fontWeight="semibold"
+              color="muted.500"
+              fontSize="xs"
+              textTransform="uppercase"
+              letterSpacing="wider"
+            >
+              Role
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              fontWeight="semibold"
+              color="muted.500"
+              fontSize="xs"
+              textTransform="uppercase"
+              letterSpacing="wider"
+            >
+              Status
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              fontWeight="semibold"
+              color="muted.500"
+              fontSize="xs"
+              textTransform="uppercase"
+              letterSpacing="wider"
+            >
+              Joined
+            </Table.ColumnHeader>
+            <Table.ColumnHeader
+              textAlign="center"
+              fontWeight="semibold"
+              color="muted.500"
+              fontSize="xs"
+              textTransform="uppercase"
+              letterSpacing="wider"
+            >
+              Actions
+            </Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -151,18 +201,18 @@ export function UsersTable({
                 colSpan={6}
                 textAlign="center"
                 py={8}
-                color="gray.400"
+                color="muted.400"
               >
                 No users found
               </Table.Cell>
             </Table.Row>
           ) : (
-            data?.map((user, i) => (
-              <Table.Row key={user.id} bg={i % 2 === 0 ? "white" : "gray.50"} _hover={{ bg: "gray.100" }}>
-                <Table.Cell fontWeight="medium">
+            data?.map((user) => (
+              <Table.Row key={user.id} _hover={{ bg: "muted.50" }}>
+                <Table.Cell fontWeight="medium" color="muted.900">
                   {user.firstName} {user.lastName}
                 </Table.Cell>
-                <Table.Cell color="gray.500" fontSize="sm">
+                <Table.Cell color="muted.500" fontSize="sm">
                   {user.email}
                 </Table.Cell>
                 <Table.Cell>
@@ -178,7 +228,7 @@ export function UsersTable({
                     {user.isActive ? "Active" : "Inactive"}
                   </Badge>
                 </Table.Cell>
-                <Table.Cell color="gray.500" fontSize="sm">
+                <Table.Cell color="muted.500" fontSize="sm">
                   {new Date(user.createdAt).toLocaleDateString()}
                 </Table.Cell>
                 <Table.Cell textAlign="center">
@@ -187,11 +237,15 @@ export function UsersTable({
                       <Button
                         size="sm"
                         variant="ghost"
-                        aria-label={user.isActive ? "Deactivate user" : "Activate user"}
+                        aria-label={
+                          user.isActive ? "Deactivate user" : "Activate user"
+                        }
                         colorPalette={user.isActive ? "red" : "green"}
                         loading={isToggling}
                         onClick={() =>
-                          user.isActive ? deactivate(user.id) : activate(user.id)
+                          user.isActive
+                            ? deactivate(user.id)
+                            : activate(user.id)
                         }
                       >
                         <LuPower size={16} />
@@ -212,21 +266,21 @@ export function UsersTable({
       </Table.Root>
 
       {totalPages > 1 && (
-        <HStack justify="center" mt={4} gap={2}>
+        <HStack justify="center" mt={6} gap={3}>
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             disabled={page === 1}
             onClick={onPrevPage}
           >
             Previous
           </Button>
-          <Text fontSize="sm" color="gray.500">
+          <Text fontSize="sm" color="muted.500">
             Page {page} of {totalPages}
           </Text>
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             disabled={page === totalPages}
             onClick={onNextPage}
           >

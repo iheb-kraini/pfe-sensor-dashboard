@@ -46,12 +46,12 @@ export function DevicesTable({
     <>
       <Table.Header>
         <Table.Row>
-          <Table.ColumnHeader>Name</Table.ColumnHeader>
-          <Table.ColumnHeader>Serial Number</Table.ColumnHeader>
-          <Table.ColumnHeader>Status</Table.ColumnHeader>
-          <Table.ColumnHeader>Active</Table.ColumnHeader>
-          <Table.ColumnHeader>Created At</Table.ColumnHeader>
-          <Table.ColumnHeader textAlign="center">Actions</Table.ColumnHeader>
+          <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Name</Table.ColumnHeader>
+          <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Serial Number</Table.ColumnHeader>
+          <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Status</Table.ColumnHeader>
+          <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Active</Table.ColumnHeader>
+          <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Created At</Table.ColumnHeader>
+          <Table.ColumnHeader textAlign="center" fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Actions</Table.ColumnHeader>
         </Table.Row>
       </Table.Header>
       <Table.Body>
@@ -67,19 +67,15 @@ export function DevicesTable({
           ))
         ) : isEmpty ? (
           <Table.Row>
-            <Table.Cell colSpan={6} textAlign="center" py={8} color="gray.400">
+            <Table.Cell colSpan={6} textAlign="center" py={8} color="muted.400">
               No devices found
             </Table.Cell>
           </Table.Row>
         ) : (
-          data?.data.map((device: Device, i: number) => (
-            <Table.Row
-              key={device.id}
-              bg={i % 2 === 0 ? "white" : "gray.50"}
-              _hover={{ bg: "gray.100" }}
-            >
-              <Table.Cell fontWeight="medium">{device.name}</Table.Cell>
-              <Table.Cell color="gray.500" fontSize="sm">
+          data?.data.map((device) => (
+            <Table.Row key={device.id} _hover={{ bg: "muted.50" }}>
+              <Table.Cell fontWeight="medium" color="muted.900">{device.name}</Table.Cell>
+              <Table.Cell color="muted.500" fontSize="sm">
                 {device.serialNumber}
               </Table.Cell>
               <Table.Cell>
@@ -100,7 +96,7 @@ export function DevicesTable({
                   {device.isActive ? "Active" : "Inactive"}
                 </Badge>
               </Table.Cell>
-              <Table.Cell color="gray.500" fontSize="sm">
+              <Table.Cell color="muted.500" fontSize="sm">
                 {new Date(device.createdAt).toLocaleDateString()}
               </Table.Cell>
               <Table.Cell>

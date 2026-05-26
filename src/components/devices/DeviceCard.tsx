@@ -17,20 +17,13 @@ export function DeviceCard({
   navigate,
 }: DeviceCardProps) {
   return (
-    <Box
-      bg="white"
-      border="1px solid"
-      borderColor="gray.200"
-      rounded="xl"
-      p={4}
-      shadow="sm"
-    >
+    <Box bg="white" rounded="xl" p={5} shadow="sm">
       <Flex justify="space-between" align="flex-start" mb={3}>
         <Box>
-          <Text fontWeight="semibold" fontSize="sm" color="gray.800">
+          <Text fontWeight="semibold" fontSize="sm" color="muted.900">
             {device.name}
           </Text>
-          <Text fontSize="xs" color="gray.400" mt={0.5}>
+          <Text fontSize="xs" color="muted.400" mt={0.5}>
             {device.serialNumber}
           </Text>
         </Box>
@@ -53,7 +46,7 @@ export function DeviceCard({
         </HStack>
       </Flex>
 
-      <Text fontSize="xs" color="gray.400" mb={4}>
+      <Text fontSize="xs" color="muted.400" mb={4}>
         Created {new Date(device.createdAt).toLocaleDateString()}
       </Text>
 
