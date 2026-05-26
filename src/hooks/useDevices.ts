@@ -30,7 +30,7 @@ export function useDevices(filters: DeviceQuery = {}) {
     queryFn: () => devicesApi.findAll(query),
   });
 
-  const totalPages = result.data ? Math.ceil(result.data.total / LIMIT) : 1;
+  const totalPages = result.data ? Math.ceil(result.data.meta.total / LIMIT) : 1;
 
   return {
     ...result,
