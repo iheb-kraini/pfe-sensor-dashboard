@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import type { CreateUserPayload, UserQuery } from "../types/user.types";
 import { usersApi } from "../api/endpoints/users.api";
+import { toaster } from "../components/ui/toaster";
 
 export const userKeys = {
   all: ["users"] as const,
@@ -41,6 +42,13 @@ export function useActivateUser() {
     mutationFn: (id: number) => usersApi.activate(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.all });
+      toaster.create({ type: "success", title: "User activated" });
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string | string[] } } };
+      const msg = err?.response?.data?.message;
+      const title = Array.isArray(msg) ? msg[0] : msg ?? "Failed to activate user";
+      toaster.create({ type: "error", title });
     },
   });
 }
@@ -51,6 +59,13 @@ export function useDeactivateUser() {
     mutationFn: (id: number) => usersApi.deactivate(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.all });
+      toaster.create({ type: "success", title: "User deactivated" });
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string | string[] } } };
+      const msg = err?.response?.data?.message;
+      const title = Array.isArray(msg) ? msg[0] : msg ?? "Failed to deactivate user";
+      toaster.create({ type: "error", title });
     },
   });
 }
@@ -62,6 +77,13 @@ export function useRegisterUser() {
     mutationFn: (payload: CreateUserPayload) => usersApi.register(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.all });
+      toaster.create({ type: "success", title: "User created" });
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string | string[] } } };
+      const msg = err?.response?.data?.message;
+      const title = Array.isArray(msg) ? msg[0] : msg ?? "Failed to create user";
+      toaster.create({ type: "error", title });
     },
   });
 }
@@ -74,6 +96,13 @@ export function useUpdateUserPassword() {
       usersApi.updatePassword(id, password),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.all });
+      toaster.create({ type: "success", title: "Password reset" });
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string | string[] } } };
+      const msg = err?.response?.data?.message;
+      const title = Array.isArray(msg) ? msg[0] : msg ?? "Failed to reset password";
+      toaster.create({ type: "error", title });
     },
   });
 }
