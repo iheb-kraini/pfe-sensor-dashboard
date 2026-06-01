@@ -29,3 +29,31 @@ export interface SensorWindowsQuery {
   page?: number;
   limit?: number;
 }
+
+export interface VibrationAnalysis {
+  rms: { x: number; y: number; z: number };
+  peakToPeak: { x: number; y: number; z: number };
+  fft: {
+    dominantFreq: number;
+    amplitude: number;
+    peaks: { freq: number; amplitude: number }[];
+    freqResolution: number;
+  };
+  processedAt: string;
+}
+
+export interface AnalysisWindow {
+  id: number;
+  recordedAt: string;
+  analysis: VibrationAnalysis;
+}
+
+export interface AnalysisResponse {
+  data: AnalysisWindow[];
+}
+
+export interface QueryAnalysisDto {
+  fields?: string;
+  from?: string;
+  to?: string;
+}
