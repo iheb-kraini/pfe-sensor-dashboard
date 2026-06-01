@@ -1,8 +1,12 @@
-import { Box, Button, Heading, HStack, Stack, Text } from "@chakra-ui/react";
+import { Box, Button, Heading, HStack, Stack, Text, VStack } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { useDevice } from "../../hooks/useDevices";
+import { useDevice, useActivateDevice, useDeactivateDevice, useRefreshApiKey } from "../../hooks/useDevices";
 import { useSensorWindowAnalysis } from "../../hooks/useSensorWindowAnalysis";
+import { useNotifications } from "../../hooks/useNotifications";
+import { NotificationItem } from "../../components/notifications/NotificationItem";
+import { DeviceInfoCard } from "../../components/devices/DeviceInfoCard";
+import { FftSpectrumChart } from "../../components/sensor-windows/FftSpectrumChart";
 import { SensorWindowFilters } from "../../components/sensor-windows/SensorWindowFilters";
 import { SummaryCards } from "../../components/sensor-windows/SummaryCards";
 import { RmsTrendChart } from "../../components/sensor-windows/RmsTrendChart";
@@ -38,6 +42,12 @@ export function SensorWindowsPage() {
   );
 
   const { data: device } = useDevice(id);
+
+  const { mutate: activateDevice, isPending: isActivating } = useActivateDevice();
+  const { mutate: deactivateDevice, isPending: isDeactivating } = useDeactivateDevice();
+  const { mutate: refreshKey, isPending: isRefreshing } = useRefreshApiKey();
+
+  const { notifications: deviceNotifications } = useNotifications({ deviceId: id, limit: 3 });
 
   const to = useMemo(() => {
     if (!from || !ISO_RE.test(from)) return "";
@@ -85,6 +95,18 @@ export function SensorWindowsPage() {
       else next.add(axis);
       return next;
     });
+  };
+
+  const handleToggleActive = () => {
+    if (device?.isActive) {
+      deactivateDevice(id);
+    } else {
+      activateDevice(id);
+    }
+  };
+
+  const handleRefreshKey = () => {
+    refreshKey(id);
   };
 
   const hasFilters = !!appliedFilters.from;
@@ -158,6 +180,8 @@ export function SensorWindowsPage() {
     return (Math.max(...times) - Math.min(...times)) / 3_600_000;
   }, [allData]);
 
+  const latestFft = allData.length > 0 ? allData[0].analysis.fft : null;
+
   return (
     <Box p={6}>
       <HStack mb={6} gap={3}>
@@ -179,6 +203,43 @@ export function SensorWindowsPage() {
           )}
         </Heading>
       </HStack>
+
+      {device && (
+        <Box mb={6}>
+          <DeviceInfoCard
+            device={device}
+            isActivating={isActivating}
+            isDeactivating={isDeactivating}
+            isRefreshing={isRefreshing}
+            onToggleActive={handleToggleActive}
+            onRefreshKey={handleRefreshKey}
+          />
+        </Box>
+      )}
+
+      {deviceNotifications.length > 0 && (
+        <Box bg="white" rounded="xl" shadow="sm" border="1px solid" borderColor="gray.100" mb={6} overflow="hidden">
+          <HStack justify="space-between" px={5} py={3} borderBottom="1px solid" borderColor="muted.100">
+            <Text fontSize="sm" fontWeight="semibold" color="muted.700">
+              Recent Notifications
+            </Text>
+            <Button size="xs" variant="ghost" colorPalette="blue" onClick={() => navigate("/notifications")}>
+              View all →
+            </Button>
+          </HStack>
+          <VStack gap={0} align="stretch">
+            {deviceNotifications.slice(0, 3).map((n) => (
+              <NotificationItem key={n.id} notification={n} />
+            ))}
+          </VStack>
+        </Box>
+      )}
+
+      {allData.length > 0 && (
+        <Box mb={6}>
+          <FftSpectrumChart fft={latestFft} isLoading={isLoading} />
+        </Box>
+      )}
 
       <Stack mb={6} gap={4}>
         <SensorWindowFilters

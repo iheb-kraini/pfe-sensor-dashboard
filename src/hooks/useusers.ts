@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { CreateUserPayload, UserQuery } from "../types/user.types";
 import { usersApi } from "../api/endpoints/users.api";
 import { toaster } from "../components/ui/toaster";
+import { useAuthStore } from "../store/auth.store";
 
 export const userKeys = {
   all: ["users"] as const,
@@ -102,6 +103,25 @@ export function useUpdateUserPassword() {
       const err = error as { response?: { data?: { message?: string | string[] } } };
       const msg = err?.response?.data?.message;
       const title = Array.isArray(msg) ? msg[0] : msg ?? "Failed to reset password";
+      toaster.create({ type: "error", title });
+    },
+  });
+}
+
+export function useUpdateProfile() {
+  const updateUser = useAuthStore((s) => s.updateUser);
+
+  return useMutation({
+    mutationFn: (dto: { firstName?: string; lastName?: string }) =>
+      usersApi.updateProfile(dto),
+    onSuccess: (data) => {
+      updateUser({ firstName: data.firstName, lastName: data.lastName });
+      toaster.create({ type: "success", title: "Profile updated" });
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string | string[] } } };
+      const msg = err?.response?.data?.message;
+      const title = Array.isArray(msg) ? msg[0] : msg ?? "Failed to update profile";
       toaster.create({ type: "error", title });
     },
   });

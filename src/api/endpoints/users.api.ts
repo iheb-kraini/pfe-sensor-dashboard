@@ -21,4 +21,6 @@ export const usersApi = {
     api
       .patch<{ message: string }>(`/users/${id}/password`, { password })
       .then((res) => res.data),
+  updateProfile: (dto: { firstName?: string; lastName?: string }) =>
+    api.patch<User>("/users/profile", dto).then((res) => res.data),
 };

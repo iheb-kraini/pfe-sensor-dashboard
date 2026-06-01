@@ -1,7 +1,8 @@
 import { Box, Flex, Text, VStack } from "@chakra-ui/react";
 import { NavLink } from "react-router-dom";
 import { useAuthStore } from "../../store/auth.store";
-import { LuRadio, LuUser, LuSettings } from "react-icons/lu";
+import { LuBell, LuRadio, LuUser, LuSettings } from "react-icons/lu";
+import { IoMdHome } from "react-icons/io";
 
 interface NavItem {
   label: string;
@@ -10,7 +11,13 @@ interface NavItem {
 }
 
 const baseNavItems: NavItem[] = [
+  { label: "Home", path: "/", icon: <IoMdHome size={18} /> },
   { label: "Devices", path: "/devices", icon: <LuRadio size={18} /> },
+  {
+    label: "Notifications",
+    path: "/notifications",
+    icon: <LuBell size={18} />,
+  },
   { label: "Profile", path: "/profile", icon: <LuUser size={18} /> },
 ];
 
@@ -43,7 +50,15 @@ export function Sidebar() {
       </Flex>
 
       <VStack align="stretch" gap={1} flex={1}>
-        <Text fontSize="xs" color="muted.400" px={3} mb={1} fontWeight="semibold" letterSpacing="wider" textTransform="uppercase">
+        <Text
+          fontSize="xs"
+          color="muted.400"
+          px={3}
+          mb={1}
+          fontWeight="semibold"
+          letterSpacing="wider"
+          textTransform="uppercase"
+        >
           Navigation
         </Text>
         {navItems.map((item) => (
@@ -81,9 +96,7 @@ export function Sidebar() {
                     rounded="full"
                   />
                 )}
-                <Box opacity={isActive ? 1 : 0.6}>
-                  {item.icon}
-                </Box>
+                <Box opacity={isActive ? 1 : 0.6}>{item.icon}</Box>
                 <Text fontSize="sm" fontWeight="medium">
                   {item.label}
                 </Text>
@@ -93,7 +106,14 @@ export function Sidebar() {
         ))}
       </VStack>
 
-      <Flex px={3} py={3} align="center" gap={2.5} borderTop="1px solid" borderColor="muted.700">
+      <Flex
+        px={3}
+        py={3}
+        align="center"
+        gap={2.5}
+        borderTop="1px solid"
+        borderColor="muted.700"
+      >
         <Box w="7px" h="7px" rounded="full" bg="green.400" />
         <Text fontSize="xs" color="muted.400" fontWeight="medium">
           System Online
