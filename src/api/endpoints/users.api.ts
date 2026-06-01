@@ -17,4 +17,8 @@ export const usersApi = {
     api.patch<User>(`/users/${id}/deactivate`).then((res) => res.data),
   register: (payload: CreateUserPayload) =>
     api.post<User>("/auth/register", payload).then((res) => res.data),
+  updatePassword: (id: number, password: string) =>
+    api
+      .patch<{ message: string }>(`/users/${id}/password`, { password })
+      .then((res) => res.data),
 };

@@ -16,3 +16,16 @@ export const createUserSchema = z.object({
 });
 
 export type CreateUserFormValues = z.infer<typeof createUserSchema>;
+
+export const updatePasswordSchema = z.object({
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(32, "Password must be at most 32 characters")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/,
+      "Must contain uppercase, lowercase, number and special character",
+    ),
+});
+
+export type UpdatePasswordFormValues = z.infer<typeof updatePasswordSchema>;

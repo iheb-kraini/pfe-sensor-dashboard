@@ -65,3 +65,15 @@ export function useRegisterUser() {
     },
   });
 }
+
+export function useUpdateUserPassword() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, password }: { id: number; password: string }) =>
+      usersApi.updatePassword(id, password),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.all });
+    },
+  });
+}
