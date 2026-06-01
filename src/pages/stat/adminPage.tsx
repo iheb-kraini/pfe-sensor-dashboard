@@ -9,6 +9,7 @@ import { UserFilters, UsersTable } from "../../components/Users/usersTable";
 import { useUserModal } from "../../hooks/useUserModal";
 import { UserFormModal } from "../../components/Users/UserFormModal";
 import { UserCards } from "../../components/Users/UserCard";
+import { PasswordResetModal } from "../../components/Users/PasswordResetModal";
 
 export function AdminPage() {
   const stats = useAdminStats();
@@ -31,6 +32,11 @@ export function AdminPage() {
     setRole("");
     setIsActive("");
   };
+
+  const [passwordResetTarget, setPasswordResetTarget] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
 
   const { data, isLoading, isError, page, totalPages, nextPage, prevPage } =
     useUsers(filters);
@@ -81,6 +87,7 @@ export function AdminPage() {
             totalPages={totalPages}
             onNextPage={nextPage}
             onPrevPage={prevPage}
+            onResetPassword={(id, name) => setPasswordResetTarget({ id, name })}
           />
         </Box>
         <Box display={{ base: "block", lg: "none" }}>
@@ -92,10 +99,17 @@ export function AdminPage() {
             totalPages={totalPages}
             onNextPage={nextPage}
             onPrevPage={prevPage}
+            onResetPassword={(id, name) => setPasswordResetTarget({ id, name })}
           />
         </Box>
       </Box>
       <UserFormModal open={open} onClose={onClose} />
+      <PasswordResetModal
+        open={passwordResetTarget !== null}
+        userId={passwordResetTarget?.id ?? 0}
+        userName={passwordResetTarget?.name ?? ""}
+        onClose={() => setPasswordResetTarget(null)}
+      />
     </Box>
   );
 }

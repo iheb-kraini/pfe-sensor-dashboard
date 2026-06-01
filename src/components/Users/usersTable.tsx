@@ -15,7 +15,7 @@ import {
   TooltipRoot,
   TooltipTrigger,
 } from "@chakra-ui/react";
-import { LuPower, LuSearch } from "react-icons/lu";
+import { LuKeyRound, LuPower, LuSearch } from "react-icons/lu";
 import type { User, UserRole } from "../../types/user.types";
 import { useActivateUser, useDeactivateUser } from "../../hooks/useusers";
 
@@ -101,6 +101,7 @@ interface TableProps {
   totalPages: number;
   onNextPage: () => void;
   onPrevPage: () => void;
+  onResetPassword: (id: number, name: string) => void;
 }
 
 export function UsersTable({
@@ -111,6 +112,7 @@ export function UsersTable({
   totalPages,
   onNextPage,
   onPrevPage,
+  onResetPassword,
 }: TableProps) {
   const { mutate: activate, isPending: isActivating } = useActivateUser();
   const { mutate: deactivate, isPending: isDeactivating } = useDeactivateUser();
@@ -232,32 +234,58 @@ export function UsersTable({
                   {new Date(user.createdAt).toLocaleDateString()}
                 </Table.Cell>
                 <Table.Cell textAlign="center">
-                  <TooltipRoot>
-                    <TooltipTrigger>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        aria-label={
-                          user.isActive ? "Deactivate user" : "Activate user"
-                        }
-                        colorPalette={user.isActive ? "red" : "green"}
-                        loading={isToggling}
-                        onClick={() =>
-                          user.isActive
-                            ? deactivate(user.id)
-                            : activate(user.id)
-                        }
-                      >
-                        <LuPower size={16} />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipPositioner>
-                      <TooltipContent>
-                        <TooltipArrow />
-                        {user.isActive ? "Deactivate" : "Activate"}
-                      </TooltipContent>
-                    </TooltipPositioner>
-                  </TooltipRoot>
+                  <HStack gap={1} justify="center">
+                    <TooltipRoot>
+                      <TooltipTrigger>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          aria-label="Reset password"
+                          colorPalette="orange"
+                          onClick={() =>
+                            onResetPassword(
+                              user.id,
+                              `${user.firstName} ${user.lastName}`,
+                            )
+                          }
+                        >
+                          <LuKeyRound size={16} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipPositioner>
+                        <TooltipContent>
+                          <TooltipArrow />
+                          Reset Password
+                        </TooltipContent>
+                      </TooltipPositioner>
+                    </TooltipRoot>
+                    <TooltipRoot>
+                      <TooltipTrigger>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          aria-label={
+                            user.isActive ? "Deactivate user" : "Activate user"
+                          }
+                          colorPalette={user.isActive ? "red" : "green"}
+                          loading={isToggling}
+                          onClick={() =>
+                            user.isActive
+                              ? deactivate(user.id)
+                              : activate(user.id)
+                          }
+                        >
+                          <LuPower size={16} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipPositioner>
+                        <TooltipContent>
+                          <TooltipArrow />
+                          {user.isActive ? "Deactivate" : "Activate"}
+                        </TooltipContent>
+                      </TooltipPositioner>
+                    </TooltipRoot>
+                  </HStack>
                 </Table.Cell>
               </Table.Row>
             ))

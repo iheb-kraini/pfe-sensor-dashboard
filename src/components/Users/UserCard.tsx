@@ -5,8 +5,14 @@ import {
   HStack,
   Skeleton,
   Text,
+  TooltipArrow,
+  TooltipContent,
+  TooltipPositioner,
+  TooltipRoot,
+  TooltipTrigger,
   VStack,
 } from "@chakra-ui/react";
+import { LuKeyRound } from "react-icons/lu";
 import type { User } from "../../types/user.types";
 import { useActivateUser, useDeactivateUser } from "../../hooks/useusers";
 
@@ -18,6 +24,7 @@ interface UserCardsProps {
   totalPages: number;
   onNextPage: () => void;
   onPrevPage: () => void;
+  onResetPassword: (id: number, name: string) => void;
 }
 
 export function UserCards({
@@ -28,6 +35,7 @@ export function UserCards({
   totalPages,
   onNextPage,
   onPrevPage,
+  onResetPassword,
 }: UserCardsProps) {
   const { mutate: activate, isPending: isActivating } = useActivateUser();
   const { mutate: deactivate, isPending: isDeactivating } = useDeactivateUser();
@@ -79,31 +87,57 @@ export function UserCards({
                 {user.email}
               </Text>
 
-              <HStack justify="space-between" align="center">
-                <HStack gap={2}>
-                  <Badge
-                    colorPalette={user.role === "admin" ? "purple" : "blue"}
-                    textTransform="capitalize"
-                  >
-                    {user.role}
-                  </Badge>
-                  <Text fontSize="xs" color="muted.400">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </Text>
-                </HStack>
+                <HStack justify="space-between" align="center">
+                  <HStack gap={2}>
+                    <Badge
+                      colorPalette={user.role === "admin" ? "purple" : "blue"}
+                      textTransform="capitalize"
+                    >
+                      {user.role}
+                    </Badge>
+                    <Text fontSize="xs" color="muted.400">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </Text>
+                  </HStack>
 
-                <Button
-                  size="xs"
-                  variant="outline"
-                  colorPalette={user.isActive ? "red" : "green"}
-                  loading={isToggling}
-                  onClick={() =>
-                    user.isActive ? deactivate(user.id) : activate(user.id)
-                  }
-                >
-                  {user.isActive ? "Deactivate" : "Activate"}
-                </Button>
-              </HStack>
+                  <HStack gap={1}>
+                    <TooltipRoot>
+                      <TooltipTrigger>
+                        <Button
+                          size="xs"
+                          variant="ghost"
+                          aria-label="Reset password"
+                          colorPalette="orange"
+                          onClick={() =>
+                            onResetPassword(
+                              user.id,
+                              `${user.firstName} ${user.lastName}`,
+                            )
+                          }
+                        >
+                          <LuKeyRound size={14} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipPositioner>
+                        <TooltipContent>
+                          <TooltipArrow />
+                          Reset Password
+                        </TooltipContent>
+                      </TooltipPositioner>
+                    </TooltipRoot>
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      colorPalette={user.isActive ? "red" : "green"}
+                      loading={isToggling}
+                      onClick={() =>
+                        user.isActive ? deactivate(user.id) : activate(user.id)
+                      }
+                    >
+                      {user.isActive ? "Deactivate" : "Activate"}
+                    </Button>
+                  </HStack>
+                </HStack>
             </Box>
           ))}
         </VStack>

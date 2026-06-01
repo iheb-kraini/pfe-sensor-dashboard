@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { authApi } from "../api/endpoints/auth.api";
 import { useAuthStore } from "../store/auth.store";
+import { toaster } from "../components/ui/toaster";
 
 export function useLogin() {
   const navigate = useNavigate();
@@ -12,6 +13,10 @@ export function useLogin() {
     onSuccess: (data) => {
       setTokens(data.accessToken, data.refreshToken);
       navigate("/devices", { replace: true });
+    },
+    onError: (error: unknown) => {
+      const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Login failed";
+      toaster.create({ type: "error", title: message });
     },
   });
 }
