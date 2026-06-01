@@ -1,9 +1,8 @@
 import { Box, Button, Heading, HStack, Stack, Text } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { useSensorWindows } from "../../hooks/useSensorWindows";
 import { useDevice } from "../../hooks/useDevices";
-import type { SensorWindow } from "../../types/sensorWindow.types";
+import { useSensorWindowAnalysis } from "../../hooks/useSensorWindowAnalysis";
 import { SensorWindowFilters } from "../../components/sensor-windows/SensorWindowFilters";
 import { SummaryCards } from "../../components/sensor-windows/SummaryCards";
 import { RmsTrendChart } from "../../components/sensor-windows/RmsTrendChart";
@@ -11,41 +10,8 @@ import type { ChartPoint } from "../../components/sensor-windows/RmsTrendChart";
 import { SensorWindowsTable } from "../../components/sensor-windows/SensorWindowsTable";
 import type { WindowRow } from "../../components/sensor-windows/SensorWindowsTable";
 
-type ParsedSample = { x: number; y: number; z: number };
-
 const BUCKET_MINUTES = 10;
-const RANGE_LIMIT = 2000;
-
-const toNumber = (value: unknown): number | null => {
-  if (typeof value === "number") {
-    return Number.isFinite(value) ? value : null;
-  }
-  if (typeof value === "string" && value.trim() !== "") {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
-};
-
-const normalizeSample = (sample: unknown): ParsedSample | null => {
-  if (!sample) return null;
-  if (Array.isArray(sample) && sample.length >= 3) {
-    const x = toNumber(sample[0]);
-    const y = toNumber(sample[1]);
-    const z = toNumber(sample[2]);
-    if (x == null || y == null || z == null) return null;
-    return { x, y, z };
-  }
-  if (typeof sample === "object") {
-    const s = sample as Record<string, unknown>;
-    const x = toNumber(s.x);
-    const y = toNumber(s.y);
-    const z = toNumber(s.z);
-    if (x == null || y == null || z == null) return null;
-    return { x, y, z };
-  }
-  return null;
-};
+const PAGE_LIMIT = 20;
 
 const formatDateTimeLocal = (date: Date) => {
   const pad = (value: number) => String(value).padStart(2, "0");
@@ -54,116 +20,7 @@ const formatDateTimeLocal = (date: Date) => {
   )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
-// ── Single-pass data processing ──────────────────────────────────────────────
-
-interface ProcessedData {
-  perWindow: WindowRow[];
-  chartData: ChartPoint[];
-  maxRms: number;
-  dominantAxis: string;
-  dominantAxisPct: number;
-  coverageHours: number;
-}
-
-function processSensorData(windows: SensorWindow[]): ProcessedData {
-  const perWindow: WindowRow[] = [];
-  let totalRmsMax = 0;
-  let domX = 0;
-  let domY = 0;
-  let domZ = 0;
-
-  const BUCKET_MS = BUCKET_MINUTES * 60 * 1000;
-  const buckets = new Map<
-    number,
-    { sumX: number; sumY: number; sumZ: number; count: number }
-  >();
-
-  for (const w of windows) {
-    const samples: ParsedSample[] = [];
-    for (const raw of w.samples) {
-      const parsed = normalizeSample(raw);
-      if (parsed) samples.push(parsed);
-    }
-    if (samples.length === 0) continue;
-
-    // AC RMS (mean-removed RMS = stddev)
-    let sx = 0, sy = 0, sz = 0;
-    for (const s of samples) { sx += s.x; sy += s.y; sz += s.z; }
-    const mx = sx / samples.length;
-    const my = sy / samples.length;
-    const mz = sz / samples.length;
-
-    let sqx = 0, sqy = 0, sqz = 0;
-    for (const s of samples) {
-      const dx = s.x - mx; sqx += dx * dx;
-      const dy = s.y - my; sqy += dy * dy;
-      const dz = s.z - mz; sqz += dz * dz;
-    }
-
-    const rmsX = Math.sqrt(sqx / samples.length);
-    const rmsY = Math.sqrt(sqy / samples.length);
-    const rmsZ = Math.sqrt(sqz / samples.length);
-
-    totalRmsMax = Math.max(totalRmsMax, rmsX, rmsY, rmsZ);
-    if (rmsX >= rmsY && rmsX >= rmsZ) domX++;
-    else if (rmsY >= rmsX && rmsY >= rmsZ) domY++;
-    else domZ++;
-
-    const time = new Date(w.recordedAt).getTime();
-    perWindow.push({ id: w.id, recordedAt: w.recordedAt, rmsX, rmsY, rmsZ });
-
-    // Bucket
-    const key = Math.floor(time / BUCKET_MS) * BUCKET_MS;
-    const b = buckets.get(key) ?? { sumX: 0, sumY: 0, sumZ: 0, count: 0 };
-    b.sumX += rmsX; b.sumY += rmsY; b.sumZ += rmsZ; b.count += 1;
-    buckets.set(key, b);
-  }
-
-  // Chart data from buckets
-  const chartData: ChartPoint[] = Array.from(buckets.entries())
-    .map(([time, b]) => ({
-      time,
-      rmsX: b.sumX / b.count,
-      rmsY: b.sumY / b.count,
-      rmsZ: b.sumZ / b.count,
-    }))
-    .sort((a, b) => a.time - b.time);
-
-  // Coverage
-  const times = perWindow.map((w) => new Date(w.recordedAt).getTime());
-  const coverageHours =
-    times.length > 1
-      ? (Math.max(...times) - Math.min(...times)) / 3_600_000
-      : 0;
-
-  // Dominant axis
-  const domTotal = domX + domY + domZ;
-  let dominantAxis = "x";
-  let dominantAxisPct = 0;
-  if (domTotal > 0) {
-    if (domX >= domY && domX >= domZ) {
-      dominantAxis = "x";
-      dominantAxisPct = Math.round((domX / domTotal) * 100);
-    } else if (domY >= domX && domY >= domZ) {
-      dominantAxis = "y";
-      dominantAxisPct = Math.round((domY / domTotal) * 100);
-    } else {
-      dominantAxis = "z";
-      dominantAxisPct = Math.round((domZ / domTotal) * 100);
-    }
-  }
-
-  return {
-    perWindow,
-    chartData,
-    maxRms: totalRmsMax,
-    dominantAxis,
-    dominantAxisPct,
-    coverageHours,
-  };
-}
-
-// ── Page ─────────────────────────────────────────────────────────────────────
+const ISO_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
 
 export function SensorWindowsPage() {
   const { deviceId } = useParams<{ deviceId: string }>();
@@ -171,7 +28,7 @@ export function SensorWindowsPage() {
   const id = Number(deviceId);
 
   const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [rangeHours, setRangeHours] = useState(24);
   const [appliedFilters, setAppliedFilters] = useState<{
     from?: string;
     to?: string;
@@ -181,22 +38,25 @@ export function SensorWindowsPage() {
   );
 
   const { data: device } = useDevice(id);
-  const { data, isLoading, isError, page, totalPages, nextPage, prevPage } =
-    useSensorWindows({
-      deviceId: id,
-      ...appliedFilters,
-      limit: RANGE_LIMIT,
-    });
 
-  // Initialize 24h range on mount only (no re-runs).
+  const to = useMemo(() => {
+    if (!from || !ISO_RE.test(from)) return "";
+    const d = new Date(from);
+    return formatDateTimeLocal(new Date(d.getTime() + rangeHours * 60 * 60 * 1000));
+  }, [from, rangeHours]);
+
+  const { data, allData, isLoading, isError, page, totalPages, nextPage, prevPage } =
+    useSensorWindowAnalysis({ deviceId: id, ...appliedFilters, limit: PAGE_LIMIT });
+
   const applyRange = useCallback((hours: number) => {
     const now = new Date();
     const fromDate = new Date(now.getTime() - hours * 60 * 60 * 1000);
-    const nextFrom = formatDateTimeLocal(fromDate);
-    const nextTo = formatDateTimeLocal(now);
-    setFrom(nextFrom);
-    setTo(nextTo);
-    setAppliedFilters({ from: nextFrom, to: nextTo });
+    setFrom(formatDateTimeLocal(fromDate));
+    setRangeHours(hours);
+    setAppliedFilters({
+      from: formatDateTimeLocal(fromDate),
+      to: formatDateTimeLocal(now),
+    });
   }, []);
 
   useEffect(() => {
@@ -214,8 +74,8 @@ export function SensorWindowsPage() {
     applyRange(24);
   };
 
-  const handleRangePreset = (hours: number) => {
-    applyRange(hours);
+  const handleRangeChange = (hours: number) => {
+    setRangeHours(hours);
   };
 
   const handleToggleAxis = (axis: string) => {
@@ -227,26 +87,79 @@ export function SensorWindowsPage() {
     });
   };
 
-  const hasFilters = !!appliedFilters.from || !!appliedFilters.to;
+  const hasFilters = !!appliedFilters.from;
 
-  // Single-pass processing: per-window RMS, bucketed chart, summary
-  const processed = useMemo<ProcessedData>(() => {
-    if (!data?.data || data.data.length === 0) {
-      return {
-        perWindow: [],
-        chartData: [],
-        maxRms: 0,
-        dominantAxis: "",
-        dominantAxisPct: 0,
-        coverageHours: 0,
-      };
+  const perWindow = useMemo<WindowRow[]>(
+    () =>
+      data.map((w) => ({
+        id: w.id,
+        recordedAt: w.recordedAt,
+        rmsX: w.analysis.rms.x,
+        rmsY: w.analysis.rms.y,
+        rmsZ: w.analysis.rms.z,
+      })),
+    [data],
+  );
+
+  const chartData = useMemo<ChartPoint[]>(() => {
+    if (allData.length === 0) return [];
+    const BUCKET_MS = BUCKET_MINUTES * 60 * 1000;
+    const buckets = new Map<
+      number,
+      { sumX: number; sumY: number; sumZ: number; count: number }
+    >();
+    for (const w of allData) {
+      const time = new Date(w.recordedAt).getTime();
+      const key = Math.floor(time / BUCKET_MS) * BUCKET_MS;
+      const b = buckets.get(key) ?? { sumX: 0, sumY: 0, sumZ: 0, count: 0 };
+      b.sumX += w.analysis.rms.x;
+      b.sumY += w.analysis.rms.y;
+      b.sumZ += w.analysis.rms.z;
+      b.count += 1;
+      buckets.set(key, b);
     }
-    return processSensorData(data.data);
-  }, [data]);
+    return Array.from(buckets.entries())
+      .map(([time, b]) => ({
+        time,
+        rmsX: b.sumX / b.count,
+        rmsY: b.sumY / b.count,
+        rmsZ: b.sumZ / b.count,
+      }))
+      .sort((a, b) => a.time - b.time);
+  }, [allData]);
+
+  const maxRms = useMemo(() => {
+    let max = 0;
+    for (const w of allData) {
+      const { x, y, z } = w.analysis.rms;
+      max = Math.max(max, x, y, z);
+    }
+    return max;
+  }, [allData]);
+
+  const dominant = useMemo(() => {
+    let domX = 0, domY = 0, domZ = 0;
+    for (const w of allData) {
+      const { x, y, z } = w.analysis.rms;
+      if (x >= y && x >= z) domX++;
+      else if (y >= x && y >= z) domY++;
+      else domZ++;
+    }
+    const total = domX + domY + domZ;
+    if (total === 0) return { axis: "", pct: 0 };
+    if (domX >= domY && domX >= domZ) return { axis: "x", pct: Math.round((domX / total) * 100) };
+    if (domY >= domX && domY >= domZ) return { axis: "y", pct: Math.round((domY / total) * 100) };
+    return { axis: "z", pct: Math.round((domZ / total) * 100) };
+  }, [allData]);
+
+  const coverageHours = useMemo(() => {
+    if (allData.length < 2) return 0;
+    const times = allData.map((w) => new Date(w.recordedAt).getTime());
+    return (Math.max(...times) - Math.min(...times)) / 3_600_000;
+  }, [allData]);
 
   return (
     <Box p={6}>
-      {/* Header */}
       <HStack mb={6} gap={3}>
         <Button size="sm" variant="ghost" onClick={() => navigate("/devices")}>
           ← Back
@@ -267,17 +180,15 @@ export function SensorWindowsPage() {
         </Heading>
       </HStack>
 
-      {/* Filters */}
       <Stack mb={6} gap={4}>
         <SensorWindowFilters
           from={from}
-          to={to}
+          rangeHours={rangeHours}
           hasFilters={hasFilters}
           onFromChange={setFrom}
-          onToChange={setTo}
+          onRangeChange={handleRangeChange}
           onApply={handleApplyFilters}
           onClear={handleResetFilters}
-          onRangePreset={handleRangePreset}
         />
       </Stack>
 
@@ -287,34 +198,31 @@ export function SensorWindowsPage() {
         </Box>
       )}
 
-      {/* Summary cards */}
       <Box mb={6}>
-        {data && (
+        {allData.length > 0 && (
           <SummaryCards
-            totalWindows={processed.perWindow.length}
-            maxRms={processed.maxRms}
-            dominantAxis={processed.dominantAxis}
-            dominantAxisPct={processed.dominantAxisPct}
-            coverageHours={processed.coverageHours}
+            totalWindows={perWindow.length}
+            maxRms={maxRms}
+            dominantAxis={dominant.axis}
+            dominantAxisPct={dominant.pct}
+            coverageHours={coverageHours}
             isLoading={isLoading}
           />
         )}
       </Box>
 
-      {/* Chart */}
       <Box mb={6}>
         <RmsTrendChart
-          data={processed.chartData}
+          data={chartData}
           visibleAxes={visibleAxes}
           onToggleAxis={handleToggleAxis}
           isLoading={isLoading}
         />
       </Box>
 
-      {/* Table */}
-      {data && (
+      {allData.length > 0 && (
         <SensorWindowsTable
-          windows={processed.perWindow}
+          windows={perWindow}
           page={page}
           totalPages={totalPages}
           isLoading={isLoading}

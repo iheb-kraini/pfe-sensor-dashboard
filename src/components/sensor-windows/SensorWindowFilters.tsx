@@ -1,17 +1,16 @@
-import { Box, Button, HStack, Input, Stack, Text } from "@chakra-ui/react";
+import { Box, Button, HStack, Input, Stack, Text, Kbd } from "@chakra-ui/react";
 
 interface Props {
   from: string;
-  to: string;
+  rangeHours: number;
   hasFilters: boolean;
   onFromChange: (v: string) => void;
-  onToChange: (v: string) => void;
+  onRangeChange: (hours: number) => void;
   onApply: () => void;
   onClear: () => void;
-  onRangePreset: (hours: number) => void;
 }
 
-const RANGE_PRESETS = [
+const RANGE_OPTIONS = [
   { label: "1h", hours: 1 },
   { label: "6h", hours: 6 },
   { label: "12h", hours: 12 },
@@ -20,14 +19,17 @@ const RANGE_PRESETS = [
 
 export function SensorWindowFilters({
   from,
-  to,
+  rangeHours,
   hasFilters,
   onFromChange,
-  onToChange,
+  onRangeChange,
   onApply,
   onClear,
-  onRangePreset,
 }: Props) {
+  const to = from
+    ? new Date(new Date(from).getTime() + rangeHours * 60 * 60 * 1000)
+    : null;
+
   return (
     <Box bg="white" shadow="sm" rounded="xl" p={6} mb={6}>
       <Stack gap={3}>
@@ -46,16 +48,42 @@ export function SensorWindowFilters({
           </Stack>
           <Stack gap={1}>
             <Text fontSize="xs" color="muted.500" fontWeight="medium">
-              To
+              Range
             </Text>
-            <Input
-              type="datetime-local"
-              value={to}
-              onChange={(e) => onToChange(e.target.value)}
-              maxW="220px"
-              size="sm"
-            />
+            <HStack gap={1}>
+              {RANGE_OPTIONS.map(({ label, hours }) => (
+                <Button
+                  key={hours}
+                  size="sm"
+                  variant={rangeHours === hours ? "solid" : "outline"}
+                  colorPalette={rangeHours === hours ? "blue" : "gray"}
+                  onClick={() => onRangeChange(hours)}
+                >
+                  {label}
+                </Button>
+              ))}
+            </HStack>
           </Stack>
+          {to && (
+            <Stack gap={1}>
+              <Text fontSize="xs" color="muted.500" fontWeight="medium">
+                To
+              </Text>
+              <Kbd
+                fontSize="sm"
+                px={3}
+                py={2}
+                bg="gray.50"
+                color="gray.600"
+                border="1px solid"
+                borderColor="gray.200"
+                rounded="md"
+                whiteSpace="nowrap"
+              >
+                {to.toLocaleString()}
+              </Kbd>
+            </Stack>
+          )}
           <Button
             size="sm"
             colorPalette="blue"
@@ -75,21 +103,6 @@ export function SensorWindowFilters({
               Clear
             </Button>
           )}
-        </HStack>
-        <HStack gap={2}>
-          <Text fontSize="xs" color="muted.500" fontWeight="medium">
-            Quick:
-          </Text>
-          {RANGE_PRESETS.map(({ label, hours }) => (
-            <Button
-              key={hours}
-              size="xs"
-              variant="outline"
-              onClick={() => onRangePreset(hours)}
-            >
-              {label}
-            </Button>
-          ))}
         </HStack>
       </Stack>
     </Box>
