@@ -57,10 +57,10 @@ function DetailRow({
 }) {
   return (
     <Grid templateColumns="140px 1fr" gap={2} alignItems="start">
-      <Text fontSize="sm" color="gray.500" fontWeight="medium">
+      <Text fontSize="sm" color="muted.500" fontWeight="medium">
         {label}
       </Text>
-      <Box fontSize="sm" color="gray.800">
+      <Box fontSize="sm" color="muted.900">
         {children}
       </Box>
     </Grid>
@@ -93,10 +93,10 @@ export function NotificationDrawer({
         <Drawer.Backdrop />
         <Drawer.Positioner>
           <Drawer.Content>
-            <Drawer.Header borderBottomWidth="1px">
+            <Drawer.Header borderBottomWidth="1px" borderColor="muted.100">
               <Flex justify="space-between" align="center" w="full">
                 <HStack gap={3}>
-                  <Heading size="md">Alert Detail</Heading>
+                  <Heading size="md" color="muted.900">Alert Detail</Heading>
                   {n && (
                     <Badge
                       colorPalette={SEVERITY_PALETTE[n.severity]}
@@ -117,7 +117,6 @@ export function NotificationDrawer({
                 </Flex>
               ) : (
                 <Stack gap={6}>
-                  {/* Message */}
                   <Box
                     bg={`${SEVERITY_PALETTE[n.severity]}.50`}
                     borderLeftWidth="4px"
@@ -126,17 +125,16 @@ export function NotificationDrawer({
                     py={3}
                     rounded="md"
                   >
-                    <Text fontSize="sm" fontWeight="medium" color="gray.800">
+                    <Text fontSize="sm" fontWeight="medium" color="muted.900">
                       {n.message}
                     </Text>
                   </Box>
 
-                  {/* Details */}
                   <Stack gap={3}>
                     <Text
                       fontSize="xs"
                       fontWeight="semibold"
-                      color="gray.400"
+                      color="muted.400"
                       textTransform="uppercase"
                       letterSpacing="wider"
                     >
@@ -165,38 +163,35 @@ export function NotificationDrawer({
                     )}
                   </Stack>
 
-                  {/* Sensor snapshot */}
-                  {n.sensorSnapshot &&
-                    Object.keys(n.sensorSnapshot).length > 0 && (
-                      <>
-                        <Separator />
-                        <Stack gap={3}>
-                          <Text
-                            fontSize="xs"
-                            fontWeight="semibold"
-                            color="gray.400"
-                            textTransform="uppercase"
-                            letterSpacing="wider"
-                          >
-                            Sensor Snapshot
-                          </Text>
-                          <Box
-                            bg="gray.50"
-                            rounded="md"
-                            p={3}
-                            fontSize="xs"
-                            fontFamily="mono"
-                            color="gray.700"
-                            whiteSpace="pre-wrap"
-                            wordBreak="break-all"
-                          >
-                            {JSON.stringify(n.sensorSnapshot, null, 2)}
-                          </Box>
-                        </Stack>
-                      </>
-                    )}
+                  {n.sensorWindow && (
+                    <>
+                      <Separator />
+                      <Stack gap={3}>
+                        <Text
+                          fontSize="xs"
+                          fontWeight="semibold"
+                          color="muted.400"
+                          textTransform="uppercase"
+                          letterSpacing="wider"
+                        >
+                          Sensor Snapshot
+                        </Text>
+                        <Box
+                          bg="muted.50"
+                          rounded="md"
+                          p={3}
+                          fontSize="xs"
+                          fontFamily="mono"
+                          color="muted.700"
+                          whiteSpace="pre-wrap"
+                          wordBreak="break-all"
+                        >
+                          {JSON.stringify(n.sensorWindow, null, 2)}
+                        </Box>
+                      </Stack>
+                    </>
+                  )}
 
-                  {/* State actions */}
                   {nextStates.length > 0 && (
                     <>
                       <Separator />
@@ -204,7 +199,7 @@ export function NotificationDrawer({
                         <Text
                           fontSize="xs"
                           fontWeight="semibold"
-                          color="gray.400"
+                          color="muted.400"
                           textTransform="uppercase"
                           letterSpacing="wider"
                         >
@@ -229,7 +224,6 @@ export function NotificationDrawer({
                     </>
                   )}
 
-                  {/* Sensor window link */}
                   {n.sensorWindowId && (
                     <>
                       <Separator />

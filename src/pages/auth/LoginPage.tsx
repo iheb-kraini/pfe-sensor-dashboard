@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useLogin } from "../../hooks/useAuth";
 import { loginSchema, type LoginFormValues } from "../../schemas/auth.schema";
+import { LuTriangleAlert, LuRadio } from "react-icons/lu";
 
 export function LoginPage() {
   const { mutate: login, isPending, isError, error } = useLogin();
@@ -37,24 +38,40 @@ export function LoginPage() {
       display="flex"
       alignItems="center"
       justifyContent="center"
-      bg="gray.50"
+      bg="#1a1d23"
     >
       <Box
         as="form"
         onSubmit={handleSubmit(onSubmit)}
         bg="white"
-        p={8}
+        p={10}
         rounded="xl"
-        shadow="md"
+        shadow="xl"
         w="full"
         maxW="400px"
       >
         <Stack gap={6}>
-          <Stack gap={1}>
-            <Heading size="xl">Welcome back</Heading>
-            <Text color="gray.500" fontSize="sm">
-              Sign in to your account
-            </Text>
+          <Stack gap={3} align="center" mb={2}>
+            <Box
+              w="48px"
+              h="48px"
+              bg="accent"
+              rounded="xl"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              color="white"
+            >
+              <LuRadio size={24} />
+            </Box>
+            <Stack gap={0} align="center">
+              <Heading size="lg" color="muted.900" fontWeight="extrabold">
+                RailMonitor
+              </Heading>
+              <Text color="muted.400" fontSize="sm">
+                Sign in to your account
+              </Text>
+            </Stack>
           </Stack>
 
           {isError && (
@@ -65,8 +82,12 @@ export function LoginPage() {
               py={3}
               rounded="md"
               fontSize="sm"
+              display="flex"
+              alignItems="center"
+              gap={2}
             >
-              {serverError}
+              <LuTriangleAlert size={16} />
+              <Text>{serverError}</Text>
             </Box>
           )}
 
@@ -99,6 +120,7 @@ export function LoginPage() {
             colorPalette="blue"
             loading={isPending}
             w="full"
+            size="lg"
           >
             Sign in
           </Button>

@@ -1,12 +1,13 @@
 import { Box, Grid, Skeleton, Text } from "@chakra-ui/react";
+import type { ReactNode } from "react";
+import { LuUsers, LuUserCheck, LuRadio, LuBellRing } from "react-icons/lu";
 
 interface StatCardProps {
   label: string;
   value: number;
   sub?: string;
   subValue?: number;
-  accent: string;
-  icon: string;
+  icon: ReactNode;
   isLoading: boolean;
 }
 
@@ -15,35 +16,14 @@ function StatCard({
   value,
   sub,
   subValue,
-  accent,
   icon,
   isLoading,
 }: StatCardProps) {
   return (
-    <Box
-      bg="white"
-      rounded="xl"
-      p={5}
-      borderWidth="1px"
-      borderColor="gray.100"
-      shadow="sm"
-      position="relative"
-      overflow="hidden"
-    >
-      {/* accent bar */}
-      <Box
-        position="absolute"
-        top={0}
-        left={0}
-        w="4px"
-        h="full"
-        bg={accent}
-        rounded="full"
-      />
-
-      <Text fontSize="xl" mb={3}>
+    <Box bg="white" rounded="xl" p={6} shadow="sm" transition="all 0.2s" _hover={{ shadow: "md", transform: "translateY(-2px)" }}>
+      <Box mb={3} color="muted.400">
         {icon}
-      </Text>
+      </Box>
 
       {isLoading ? (
         <>
@@ -55,16 +35,16 @@ function StatCard({
           <Text
             fontSize="3xl"
             fontWeight="bold"
-            color="gray.800"
+            color="muted.900"
             lineHeight={1}
           >
             {value.toLocaleString()}
           </Text>
-          <Text fontSize="sm" color="gray.500" mt={1}>
+          <Text fontSize="sm" color="muted.500" mt={1}>
             {label}
           </Text>
           {sub && subValue !== undefined && (
-            <Text fontSize="xs" color="gray.400" mt={2}>
+            <Text fontSize="xs" color="muted.400" mt={2}>
               {subValue.toLocaleString()} {sub}
             </Text>
           )}
@@ -104,39 +84,35 @@ export function StatsCards({
       mb={8}
     >
       <StatCard
-        icon="👥"
+        icon={<LuUsers size={22} />}
         label="Total Users"
         value={totalUsers}
         sub="active"
         subValue={activeUsers}
-        accent="blue.400"
         isLoading={isLoading}
       />
       <StatCard
-        icon="✅"
+        icon={<LuUserCheck size={22} />}
         label="Active Users"
         value={activeUsers}
         sub={`of ${totalUsers} total`}
         subValue={totalUsers - activeUsers}
-        accent="green.400"
         isLoading={isLoading}
       />
       <StatCard
-        icon="📡"
+        icon={<LuRadio size={22} />}
         label="Total Devices"
         value={totalDevices}
         sub="online"
         subValue={onlineDevices}
-        accent="purple.400"
         isLoading={isLoading}
       />
       <StatCard
-        icon="🔔"
+        icon={<LuBellRing size={22} />}
         label="Total Alerts"
         value={totalAlerts}
         sub="unopened"
         subValue={unreadAlerts}
-        accent="orange.400"
         isLoading={isLoading}
       />
     </Grid>

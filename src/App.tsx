@@ -1,10 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-// import { DevicesPage } from "src/pages/devices/DevicesPage";
-// import { SensorWindowsPage } from "src/pages/sensor-windows/SensorWindowsPage";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { ProtectedRoute } from "./components/shared/ProtectedRoute";
 import { AppShell } from "./components/layout/AppShell";
 import { DevicesPage } from "./pages/devices/DevicesPage";
+import { HomePage } from "./pages/dashboard/HomePage";
 import { ProfilePage } from "./pages/profile/ProfilePage";
 import { SensorWindowsPage } from "./pages/sensor-windows/SensorWindowsPage";
 import { AdminPage } from "./pages/stat/adminPage";
@@ -18,7 +17,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route element={<ProtectedRoute />}>
           <Route element={<AppShell />}>
-            <Route path="/" element={<Navigate to="/devices" replace />} />
+            <Route path="/" element={<HomePage />} />
             <Route path="/devices" element={<DevicesPage />} />
             <Route
               path="/devices/:deviceId/sensor-windows"
@@ -28,10 +27,8 @@ export default function App() {
               path="/sensor-windows/:id"
               element={<SensorWindowDetailPage />}
             />
-            <Route path="/" element={<Navigate to="/devices" replace />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
-
             <Route path="/admin" element={<AdminPage />} />
           </Route>
         </Route>

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useNotificationStore } from "../../store/notification.store";
 import { useNotifications } from "../../hooks/useNotifications";
 import { NotificationItem } from "./NotificationItem";
+import { LuBell } from "react-icons/lu";
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -17,9 +18,7 @@ export function NotificationBell() {
     <Popover.Root open={open} onOpenChange={(e) => setOpen(e.open)}>
       <Popover.Trigger asChild>
         <Box position="relative" cursor="pointer">
-          <Box fontSize="xl" lineHeight={1} userSelect="none">
-            🔔
-          </Box>
+          <LuBell size={20} />
           {unreadCount > 0 && (
             <Flex
               position="absolute"
@@ -48,21 +47,18 @@ export function NotificationBell() {
             w="360px"
             p={0}
             shadow="lg"
-            border="1px solid"
-            borderColor="gray.200"
             rounded="xl"
             overflow="hidden"
           >
-            {/* header */}
             <Flex
               px={4}
               py={3}
               justify="space-between"
               align="center"
               borderBottom="1px solid"
-              borderColor="gray.100"
+              borderColor="muted.100"
             >
-              <Text fontWeight="semibold" fontSize="sm" color="gray.800">
+              <Text fontWeight="semibold" fontSize="sm" color="muted.900">
                 Notifications
               </Text>
               {unreadCount > 0 && (
@@ -80,10 +76,9 @@ export function NotificationBell() {
               )}
             </Flex>
 
-            {/* list */}
             {preview.length === 0 ? (
               <Flex justify="center" py={8}>
-                <Text fontSize="sm" color="gray.400">
+                <Text fontSize="sm" color="muted.400">
                   No notifications
                 </Text>
               </Flex>
@@ -99,17 +94,16 @@ export function NotificationBell() {
               </VStack>
             )}
 
-            {/* footer */}
             <Flex
               px={4}
               py={2.5}
               borderTop="1px solid"
-              borderColor="gray.100"
+              borderColor="muted.100"
               justify="center"
             >
               <Text
                 fontSize="xs"
-                color="blue.600"
+                color="accent"
                 fontWeight="semibold"
                 cursor="pointer"
                 _hover={{ textDecoration: "underline" }}

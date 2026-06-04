@@ -6,6 +6,7 @@ import type { JwtPayload } from "../types/auth.types";
 interface AuthState {
   user: JwtPayload | null;
   setTokens: (access: string, refresh: string) => void;
+  updateUser: (data: { firstName: string; lastName: string }) => void;
   logout: () => void;
   isAdmin: () => boolean;
 }
@@ -25,6 +26,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setTokens: (access, refresh) => {
     tokenStorage.setTokens(access, refresh);
     set({ user: jwtDecode<JwtPayload>(access) });
+  },
+  updateUser: (data) => {
+    set((state) => ({
+      user: state.user ? { ...state.user, ...data } : null,
+    }));
   },
   logout: () => {
     tokenStorage.clear();

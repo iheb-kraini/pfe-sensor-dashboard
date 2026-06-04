@@ -6,6 +6,7 @@ import type {
   UpdateDeviceDto,
 } from "../types/device.types";
 import { useEffect, useState } from "react";
+import { toaster } from "../components/ui/toaster";
 
 export const deviceKeys = {
   all: ["devices"] as const,
@@ -30,7 +31,7 @@ export function useDevices(filters: DeviceQuery = {}) {
     queryFn: () => devicesApi.findAll(query),
   });
 
-  const totalPages = result.data ? Math.ceil(result.data.total / LIMIT) : 1;
+  const totalPages = result.data ? Math.ceil(result.data.meta.total / LIMIT) : 1;
 
   return {
     ...result,
@@ -55,6 +56,13 @@ export function useCreateDevice() {
     mutationFn: (dto: CreateDeviceDto) => devicesApi.create(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: deviceKeys.all });
+      toaster.create({ type: "success", title: "Device created" });
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string | string[] } } };
+      const msg = err?.response?.data?.message;
+      const title = Array.isArray(msg) ? msg[0] : msg ?? "Failed to create device";
+      toaster.create({ type: "error", title });
     },
   });
 }
@@ -65,6 +73,13 @@ export function useUpdateDevice(id: number) {
     mutationFn: (dto: UpdateDeviceDto) => devicesApi.update(id, dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: deviceKeys.all });
+      toaster.create({ type: "success", title: "Device updated" });
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string | string[] } } };
+      const msg = err?.response?.data?.message;
+      const title = Array.isArray(msg) ? msg[0] : msg ?? "Failed to update device";
+      toaster.create({ type: "error", title });
     },
   });
 }
@@ -75,6 +90,13 @@ export function useActivateDevice() {
     mutationFn: (id: number) => devicesApi.activate(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: deviceKeys.all });
+      toaster.create({ type: "success", title: "Device activated" });
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string | string[] } } };
+      const msg = err?.response?.data?.message;
+      const title = Array.isArray(msg) ? msg[0] : msg ?? "Failed to activate device";
+      toaster.create({ type: "error", title });
     },
   });
 }
@@ -85,6 +107,13 @@ export function useDeactivateDevice() {
     mutationFn: (id: number) => devicesApi.deactivate(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: deviceKeys.all });
+      toaster.create({ type: "success", title: "Device deactivated" });
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string | string[] } } };
+      const msg = err?.response?.data?.message;
+      const title = Array.isArray(msg) ? msg[0] : msg ?? "Failed to deactivate device";
+      toaster.create({ type: "error", title });
     },
   });
 }
@@ -95,6 +124,13 @@ export function useRefreshApiKey() {
     mutationFn: (id: number) => devicesApi.refreshApiKey(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: deviceKeys.detail(id) });
+      toaster.create({ type: "success", title: "API key refreshed" });
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string | string[] } } };
+      const msg = err?.response?.data?.message;
+      const title = Array.isArray(msg) ? msg[0] : msg ?? "Failed to refresh API key";
+      toaster.create({ type: "error", title });
     },
   });
 }

@@ -1,98 +1,21 @@
-import {
-  Badge,
-  Box,
-  Button,
-  Heading,
-  HStack,
-  Stack,
-  Text,
-  Input,
-} from "@chakra-ui/react";
+import { Box, Button, Heading, HStack, Stack, Text, VStack } from "@chakra-ui/react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { useSensorWindows } from "../../hooks/useSensorWindows";
-import { useDevice } from "../../hooks/useDevices";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+import { useDevice, useActivateDevice, useDeactivateDevice, useRefreshApiKey } from "../../hooks/useDevices";
+import { useSensorWindowAnalysis } from "../../hooks/useSensorWindowAnalysis";
+import { useNotifications } from "../../hooks/useNotifications";
+import { NotificationItem } from "../../components/notifications/NotificationItem";
+import { DeviceInfoCard } from "../../components/devices/DeviceInfoCard";
+import { FftSpectrumChart } from "../../components/sensor-windows/FftSpectrumChart";
+import { SensorWindowFilters } from "../../components/sensor-windows/SensorWindowFilters";
+import { SummaryCards } from "../../components/sensor-windows/SummaryCards";
+import { RmsTrendChart } from "../../components/sensor-windows/RmsTrendChart";
+import type { ChartPoint } from "../../components/sensor-windows/RmsTrendChart";
+import { SensorWindowsTable } from "../../components/sensor-windows/SensorWindowsTable";
+import type { WindowRow } from "../../components/sensor-windows/SensorWindowsTable";
 
-type ParsedSample = { x: number; y: number; z: number };
-
-const BUCKET_MINUTES = 2;
-const RANGE_LIMIT = 2000;
-
-const toNumber = (value: unknown): number | null => {
-  if (typeof value === "number") {
-    return Number.isFinite(value) ? value : null;
-  }
-  if (typeof value === "string" && value.trim() !== "") {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
-};
-
-const normalizeSample = (sample: unknown): ParsedSample | null => {
-  if (!sample) return null;
-  if (Array.isArray(sample) && sample.length >= 3) {
-    const x = toNumber(sample[0]);
-    const y = toNumber(sample[1]);
-    const z = toNumber(sample[2]);
-    if (x == null || y == null || z == null) return null;
-    return { x, y, z };
-  }
-  if (typeof sample === "object") {
-    const s = sample as Record<string, unknown>;
-    const x = toNumber(s.x);
-    const y = toNumber(s.y);
-    const z = toNumber(s.z);
-    if (x == null || y == null || z == null) return null;
-    return { x, y, z };
-  }
-  return null;
-};
-
-const computeWindowMetrics = (samples: ParsedSample[]) => {
-  if (samples.length === 0) return null;
-
-  let sumX = 0;
-  let sumY = 0;
-  let sumZ = 0;
-  for (const s of samples) {
-    sumX += s.x;
-    sumY += s.y;
-    sumZ += s.z;
-  }
-  const meanX = sumX / samples.length;
-  const meanY = sumY / samples.length;
-  const meanZ = sumZ / samples.length;
-
-  let sumSqX = 0;
-  let sumSqY = 0;
-  let sumSqZ = 0;
-
-  for (const s of samples) {
-    const dx = s.x - meanX;
-    const dy = s.y - meanY;
-    const dz = s.z - meanZ;
-    sumSqX += dx * dx;
-    sumSqY += dy * dy;
-    sumSqZ += dz * dz;
-  }
-
-  const rmsX = Math.sqrt(sumSqX / samples.length);
-  const rmsY = Math.sqrt(sumSqY / samples.length);
-  const rmsZ = Math.sqrt(sumSqZ / samples.length);
-
-  return { rmsX, rmsY, rmsZ };
-};
+const BUCKET_MINUTES = 10;
+const PAGE_LIMIT = 20;
 
 const formatDateTimeLocal = (date: Date) => {
   const pad = (value: number) => String(value).padStart(2, "0");
@@ -101,101 +24,54 @@ const formatDateTimeLocal = (date: Date) => {
   )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
+const ISO_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+
 export function SensorWindowsPage() {
   const { deviceId } = useParams<{ deviceId: string }>();
   const navigate = useNavigate();
   const id = Number(deviceId);
 
   const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [rangeHours, setRangeHours] = useState<12 | 24>(24);
+  const [rangeHours, setRangeHours] = useState(24);
   const [appliedFilters, setAppliedFilters] = useState<{
     from?: string;
     to?: string;
   }>({});
+  const [visibleAxes, setVisibleAxes] = useState<Set<string>>(
+    new Set(["rmsX", "rmsY", "rmsZ"]),
+  );
 
   const { data: device } = useDevice(id);
-  const { data, isLoading, isError, page, totalPages, nextPage, prevPage } =
-    useSensorWindows({
-      deviceId: id,
-      ...appliedFilters,
-      limit: RANGE_LIMIT,
-    });
 
-  // Build 2-minute RMS-per-axis buckets for trend view.
-  const metricsData = useMemo(() => {
-    if (!data?.data) return [];
+  const { mutate: activateDevice, isPending: isActivating } = useActivateDevice();
+  const { mutate: deactivateDevice, isPending: isDeactivating } = useDeactivateDevice();
+  const { mutate: refreshKey, isPending: isRefreshing } = useRefreshApiKey();
 
-    const buckets = new Map<
-      number,
-      { rmsXSum: number; rmsYSum: number; rmsZSum: number; count: number }
-    >();
+  const { notifications: deviceNotifications } = useNotifications({ deviceId: id, limit: 3 });
 
-    for (const window of data.data) {
-      const parsedSamples = window.samples
-        .map((sample) => normalizeSample(sample))
-        .filter((sample): sample is ParsedSample => sample !== null);
+  const to = useMemo(() => {
+    if (!from || !ISO_RE.test(from)) return "";
+    const d = new Date(from);
+    return formatDateTimeLocal(new Date(d.getTime() + rangeHours * 60 * 60 * 1000));
+  }, [from, rangeHours]);
 
-      const metrics = computeWindowMetrics(parsedSamples);
-      if (!metrics) continue;
+  const { data, allData, isLoading, isError, page, totalPages, nextPage, prevPage } =
+    useSensorWindowAnalysis({ deviceId: id, ...appliedFilters, limit: PAGE_LIMIT });
 
-      const bucketDate = new Date(window.recordedAt);
-      const bucketMinute =
-        Math.floor(bucketDate.getMinutes() / BUCKET_MINUTES) * BUCKET_MINUTES;
-      bucketDate.setMinutes(bucketMinute, 0, 0);
-      const key = bucketDate.getTime();
-
-      const bucket = buckets.get(key) ?? {
-        rmsXSum: 0,
-        rmsYSum: 0,
-        rmsZSum: 0,
-        count: 0,
-      };
-      bucket.rmsXSum += metrics.rmsX;
-      bucket.rmsYSum += metrics.rmsY;
-      bucket.rmsZSum += metrics.rmsZ;
-      bucket.count += 1;
-      buckets.set(key, bucket);
-    }
-
-    return Array.from(buckets.entries())
-      .map(([time, bucket]) => ({
-        time,
-        rmsX: bucket.rmsXSum / bucket.count,
-        rmsY: bucket.rmsYSum / bucket.count,
-        rmsZ: bucket.rmsZSum / bucket.count,
-        count: bucket.count,
-      }))
-      .sort((a, b) => a.time - b.time);
-  }, [data]);
-
-  const formatBucketTime = (ms: number) => {
-    const d = new Date(ms);
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    const hour = String(d.getHours()).padStart(2, "0");
-    const minute = String(d.getMinutes()).padStart(2, "0");
-    return `${month}/${day} ${hour}:${minute}`;
-  };
-
-  const formatTooltipTime = (ms: number) => new Date(ms).toISOString();
-
-  const applyRange = useCallback((hours: 12 | 24) => {
+  const applyRange = useCallback((hours: number) => {
     const now = new Date();
     const fromDate = new Date(now.getTime() - hours * 60 * 60 * 1000);
-    const nextFrom = formatDateTimeLocal(fromDate);
-    const nextTo = formatDateTimeLocal(now);
-    setFrom(nextFrom);
-    setTo(nextTo);
+    setFrom(formatDateTimeLocal(fromDate));
+    setRangeHours(hours);
     setAppliedFilters({
-      from: nextFrom,
-      to: nextTo,
+      from: formatDateTimeLocal(fromDate),
+      to: formatDateTimeLocal(now),
     });
   }, []);
 
   useEffect(() => {
-    applyRange(rangeHours);
-  }, [applyRange, rangeHours]);
+    applyRange(24);
+  }, [applyRange]);
 
   const handleApplyFilters = () => {
     setAppliedFilters({
@@ -205,14 +81,109 @@ export function SensorWindowsPage() {
   };
 
   const handleResetFilters = () => {
-    applyRange(rangeHours);
+    applyRange(24);
   };
 
-  const hasFilters = !!appliedFilters.from || !!appliedFilters.to;
+  const handleRangeChange = (hours: number) => {
+    setRangeHours(hours);
+  };
+
+  const handleToggleAxis = (axis: string) => {
+    setVisibleAxes((prev) => {
+      const next = new Set(prev);
+      if (next.has(axis)) next.delete(axis);
+      else next.add(axis);
+      return next;
+    });
+  };
+
+  const handleToggleActive = () => {
+    if (device?.isActive) {
+      deactivateDevice(id);
+    } else {
+      activateDevice(id);
+    }
+  };
+
+  const handleRefreshKey = () => {
+    refreshKey(id);
+  };
+
+  const hasFilters = !!appliedFilters.from;
+
+  const perWindow = useMemo<WindowRow[]>(
+    () =>
+      data.map((w) => ({
+        id: w.id,
+        recordedAt: w.recordedAt,
+        rmsX: w.analysis.rms.x,
+        rmsY: w.analysis.rms.y,
+        rmsZ: w.analysis.rms.z,
+      })),
+    [data],
+  );
+
+  const chartData = useMemo<ChartPoint[]>(() => {
+    if (allData.length === 0) return [];
+    const BUCKET_MS = BUCKET_MINUTES * 60 * 1000;
+    const buckets = new Map<
+      number,
+      { sumX: number; sumY: number; sumZ: number; count: number }
+    >();
+    for (const w of allData) {
+      const time = new Date(w.recordedAt).getTime();
+      const key = Math.floor(time / BUCKET_MS) * BUCKET_MS;
+      const b = buckets.get(key) ?? { sumX: 0, sumY: 0, sumZ: 0, count: 0 };
+      b.sumX += w.analysis.rms.x;
+      b.sumY += w.analysis.rms.y;
+      b.sumZ += w.analysis.rms.z;
+      b.count += 1;
+      buckets.set(key, b);
+    }
+    return Array.from(buckets.entries())
+      .map(([time, b]) => ({
+        time,
+        rmsX: b.sumX / b.count,
+        rmsY: b.sumY / b.count,
+        rmsZ: b.sumZ / b.count,
+      }))
+      .sort((a, b) => a.time - b.time);
+  }, [allData]);
+
+  const maxRms = useMemo(() => {
+    let max = 0;
+    for (const w of allData) {
+      const { x, y, z } = w.analysis.rms;
+      max = Math.max(max, x, y, z);
+    }
+    return max;
+  }, [allData]);
+
+  const dominant = useMemo(() => {
+    let domX = 0, domY = 0, domZ = 0;
+    for (const w of allData) {
+      const { x, y, z } = w.analysis.rms;
+      if (x >= y && x >= z) domX++;
+      else if (y >= x && y >= z) domY++;
+      else domZ++;
+    }
+    const total = domX + domY + domZ;
+    if (total === 0) return { axis: "", pct: 0 };
+    if (domX >= domY && domX >= domZ) return { axis: "x", pct: Math.round((domX / total) * 100) };
+    if (domY >= domX && domY >= domZ) return { axis: "y", pct: Math.round((domY / total) * 100) };
+    return { axis: "z", pct: Math.round((domZ / total) * 100) };
+  }, [allData]);
+
+  const coverageHours = useMemo(() => {
+    if (allData.length < 2) return 0;
+    const times = allData.map((w) => new Date(w.recordedAt).getTime());
+    return (Math.max(...times) - Math.min(...times)) / 3_600_000;
+  }, [allData]);
+
+  const latestFft = allData.length > 0 ? allData[0].analysis.fft : null;
 
   return (
     <Box p={6}>
-      {/* Header */}
       <HStack mb={6} gap={3}>
         <Button size="sm" variant="ghost" onClick={() => navigate("/devices")}>
           ← Back
@@ -233,52 +204,54 @@ export function SensorWindowsPage() {
         </Heading>
       </HStack>
 
-      {/* Filters */}
-      <HStack mb={6} gap={3} flexWrap="wrap">
-        <Stack gap={1}>
-          <Text fontSize="xs" color="gray.500" fontWeight="medium">
-            From
-          </Text>
-          <Input
-            type="datetime-local"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            maxW="220px"
-            size="sm"
+      {device && (
+        <Box mb={6}>
+          <DeviceInfoCard
+            device={device}
+            isActivating={isActivating}
+            isDeactivating={isDeactivating}
+            isRefreshing={isRefreshing}
+            onToggleActive={handleToggleActive}
+            onRefreshKey={handleRefreshKey}
           />
-        </Stack>
-        <Stack gap={1}>
-          <Text fontSize="xs" color="gray.500" fontWeight="medium">
-            To
-          </Text>
-          <Input
-            type="datetime-local"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-            maxW="220px"
-            size="sm"
-          />
-        </Stack>
-        <Button
-          size="sm"
-          colorPalette="blue"
-          alignSelf="flex-end"
-          onClick={handleApplyFilters}
-        >
-          Apply
-        </Button>
-        {hasFilters && (
-          <Button
-            size="sm"
-            variant="ghost"
-            colorPalette="red"
-            alignSelf="flex-end"
-            onClick={handleResetFilters}
-          >
-            Clear
-          </Button>
-        )}
-      </HStack>
+        </Box>
+      )}
+
+      {deviceNotifications.length > 0 && (
+        <Box bg="white" rounded="xl" shadow="sm" border="1px solid" borderColor="gray.100" mb={6} overflow="hidden">
+          <HStack justify="space-between" px={5} py={3} borderBottom="1px solid" borderColor="muted.100">
+            <Text fontSize="sm" fontWeight="semibold" color="muted.700">
+              Recent Notifications
+            </Text>
+            <Button size="xs" variant="ghost" colorPalette="blue" onClick={() => navigate("/notifications")}>
+              View all →
+            </Button>
+          </HStack>
+          <VStack gap={0} align="stretch">
+            {deviceNotifications.slice(0, 3).map((n) => (
+              <NotificationItem key={n.id} notification={n} />
+            ))}
+          </VStack>
+        </Box>
+      )}
+
+      {allData.length > 0 && (
+        <Box mb={6}>
+          <FftSpectrumChart fft={latestFft} isLoading={isLoading} />
+        </Box>
+      )}
+
+      <Stack mb={6} gap={4}>
+        <SensorWindowFilters
+          from={from}
+          rangeHours={rangeHours}
+          hasFilters={hasFilters}
+          onFromChange={setFrom}
+          onRangeChange={handleRangeChange}
+          onApply={handleApplyFilters}
+          onClear={handleResetFilters}
+        />
+      </Stack>
 
       {isError && (
         <Box bg="red.50" color="red.600" px={4} py={3} rounded="md" mb={4}>
@@ -286,148 +259,37 @@ export function SensorWindowsPage() {
         </Box>
       )}
 
-      {/* Summary badges */}
-      {data && (
-        <HStack mb={4} gap={3} flexWrap="wrap">
-          <Badge colorPalette="blue">{data.data.length} windows</Badge>
-          <Badge colorPalette="gray">
-            {metricsData.length} buckets ({BUCKET_MINUTES}-min, last{" "}
-            {rangeHours}h)
-          </Badge>
-        </HStack>
-      )}
-
-      {data && (
-        <HStack mb={4} gap={2} flexWrap="wrap">
-          <Text fontSize="sm" color="gray.500">
-            Range
-          </Text>
-          <Button
-            size="xs"
-            variant={rangeHours === 24 ? "solid" : "outline"}
-            colorPalette="blue"
-            onClick={() => setRangeHours(24)}
-          >
-            24h
-          </Button>
-          <Button
-            size="xs"
-            variant={rangeHours === 12 ? "solid" : "outline"}
-            onClick={() => setRangeHours(12)}
-          >
-            12h
-          </Button>
-        </HStack>
-      )}
-
-      {/* Chart */}
-      <Box
-        bg="white"
-        rounded="lg"
-        shadow="sm"
-        border="1px solid"
-        borderColor="gray.200"
-        p={4}
-        mb={6}
-      >
-        {isLoading ? (
-          <Box textAlign="center" py={16} color="gray.400">
-            Loading...
-          </Box>
-        ) : metricsData.length === 0 ? (
-          <Box textAlign="center" py={16} color="gray.400">
-            No metric data found
-          </Box>
-        ) : (
-          <ResponsiveContainer width="100%" height={380}>
-            <LineChart
-              data={metricsData}
-              margin={{ top: 8, right: 24, left: 0, bottom: 8 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis
-                dataKey="time"
-                type="number"
-                domain={["dataMin", "dataMax"]}
-                scale="time"
-                tickFormatter={formatBucketTime}
-                tick={{ fontSize: 11 }}
-                minTickGap={80}
-              />
-              <YAxis
-                tick={{ fontSize: 11 }}
-                label={{
-                  value: "m/s^2",
-                  angle: -90,
-                  position: "insideLeft",
-                  offset: 10,
-                  style: { fontSize: 11, fill: "#888" },
-                }}
-              />
-              <Tooltip
-                labelFormatter={(label) => formatTooltipTime(Number(label))}
-                formatter={(value, name) => [
-                  `${Number(value).toFixed(4)} m/s^2`,
-                  String(name).toUpperCase(),
-                ]}
-                contentStyle={{ fontSize: 12 }}
-              />
-              <Legend
-                formatter={(value) => value.toUpperCase()}
-                wrapperStyle={{ fontSize: 13 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="rmsX"
-                stroke="#3B82F6"
-                strokeWidth={1.5}
-                dot={false}
-                activeDot={{ r: 3 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="rmsY"
-                stroke="#10B981"
-                strokeWidth={1.5}
-                dot={false}
-                activeDot={{ r: 3 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="rmsZ"
-                stroke="#F59E0B"
-                strokeWidth={1.5}
-                dot={false}
-                activeDot={{ r: 3 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+      <Box mb={6}>
+        {allData.length > 0 && (
+          <SummaryCards
+            totalWindows={perWindow.length}
+            maxRms={maxRms}
+            dominantAxis={dominant.axis}
+            dominantAxisPct={dominant.pct}
+            coverageHours={coverageHours}
+            isLoading={isLoading}
+          />
         )}
       </Box>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <HStack justify="center" mt={4} gap={2}>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={page === 1}
-            onClick={prevPage}
-          >
-            Previous
-          </Button>
-          <Text fontSize="sm" color="gray.500">
-            Page {page} of {totalPages}
-          </Text>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={page === totalPages}
-            onClick={nextPage}
-          >
-            Next
-          </Button>
-        </HStack>
+      <Box mb={6}>
+        <RmsTrendChart
+          data={chartData}
+          visibleAxes={visibleAxes}
+          onToggleAxis={handleToggleAxis}
+          isLoading={isLoading}
+        />
+      </Box>
+
+      {allData.length > 0 && (
+        <SensorWindowsTable
+          windows={perWindow}
+          page={page}
+          totalPages={totalPages}
+          isLoading={isLoading}
+          onPrevPage={prevPage}
+          onNextPage={nextPage}
+        />
       )}
     </Box>
   );
