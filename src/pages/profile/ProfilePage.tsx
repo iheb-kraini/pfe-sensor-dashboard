@@ -21,6 +21,7 @@ import {
   updateProfileSchema,
   type UpdateProfileFormValues,
 } from "../../schemas/user.schema";
+import { PushToggle } from "../../components/notifications/PushToggle";
 import { LuShield, LuUser, LuPencil } from "react-icons/lu";
 
 export function ProfilePage() {
@@ -148,6 +149,16 @@ export function ProfilePage() {
                 </Stack>
               )}
             </Stack>
+          </Card.Body>
+        </Card.Root>
+
+        <Card.Root overflow="hidden" shadow="sm" mt={6}>
+          <Box h="3px" bg="accent" />
+          <Card.Body>
+            <Heading size="md" mb={4}>
+              Notifications
+            </Heading>
+            <PushToggle />
           </Card.Body>
         </Card.Root>
       </Box>

@@ -1,4 +1,4 @@
-import { Box, Button, HStack, Input, NativeSelect } from "@chakra-ui/react";
+import { Box, Button, Input, NativeSelect, Stack } from "@chakra-ui/react";
 import type {
   NotificationState,
   SeverityLevel,
@@ -31,8 +31,8 @@ export function NotificationFilters({
 }: Props) {
   return (
     <Box bg="white" shadow="sm" rounded="xl" p={6} mb={6}>
-      <HStack gap={4} flexWrap="wrap">
-        <NativeSelect.Root maxW="180px">
+      <Stack direction={{ base: "column", sm: "row" }} gap={3} flexWrap="wrap">
+        <NativeSelect.Root maxW={{ base: "full", sm: "180px" }}>
           <NativeSelect.Field
             value={state}
             onChange={(e) =>
@@ -48,7 +48,7 @@ export function NotificationFilters({
           <NativeSelect.Indicator />
         </NativeSelect.Root>
 
-        <NativeSelect.Root maxW="150px">
+        <NativeSelect.Root maxW={{ base: "full", sm: "150px" }}>
           <NativeSelect.Field
             value={severity}
             onChange={(e) =>
@@ -68,14 +68,14 @@ export function NotificationFilters({
           type="date"
           value={from}
           onChange={(e) => onFromChange(e.target.value)}
-          maxW="160px"
+          maxW={{ base: "full", sm: "160px" }}
           fontSize="sm"
         />
         <Input
           type="date"
           value={to}
           onChange={(e) => onToChange(e.target.value)}
-          maxW="160px"
+          maxW={{ base: "full", sm: "160px" }}
           fontSize="sm"
         />
 
@@ -84,7 +84,7 @@ export function NotificationFilters({
             Clear filters
           </Button>
         )}
-      </HStack>
+      </Stack>
     </Box>
   );
 }

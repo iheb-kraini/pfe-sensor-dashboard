@@ -9,6 +9,7 @@ import {
   Skeleton,
   Table,
   Text,
+  VStack,
 } from "@chakra-ui/react";
 import { LuBell } from "react-icons/lu";
 import { useNotifications } from "../../hooks/useNotifications";
@@ -17,6 +18,7 @@ import type {
   NotificationState,
   SeverityLevel,
 } from "../../types/notification.types";
+import { NotificationCard } from "../../components/notifications/NotificationCard";
 import { NotificationDrawer } from "../../components/notifications/Notificationdrawer";
 import { NotificationFilters } from "../../components/notifications/Notificationfilters";
 
@@ -104,81 +106,110 @@ export function NotificationsPage() {
         </Box>
       )}
 
-      <Table.Root>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Severity</Table.ColumnHeader>
-            <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Message</Table.ColumnHeader>
-            <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Device</Table.ColumnHeader>
-            <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">State</Table.ColumnHeader>
-            <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Date</Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {isLoading ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <Table.Row key={i}>
-                {Array.from({ length: 5 }).map((_, j) => (
-                  <Table.Cell key={j}>
-                    <Skeleton h="20px" rounded="md" />
-                  </Table.Cell>
-                ))}
-              </Table.Row>
-            ))
-          ) : notifications.length === 0 ? (
-            <Table.Row>
-              <Table.Cell colSpan={5} textAlign="center" py={8} color="muted.400">
-                <Flex direction="column" align="center" gap={2}>
-                  <Box opacity={0.4}><LuBell size={32} /></Box>
-                  <Text fontSize="sm">No notifications found</Text>
-                </Flex>
-              </Table.Cell>
-            </Table.Row>
-          ) : (
-            notifications.map((n) => (
-              <Table.Row
+      {/* Mobile: card list */}
+      <Box display={{ base: "block", lg: "none" }}>
+        {isLoading ? (
+          <VStack gap={3}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} h="130px" rounded="xl" w="full" />
+            ))}
+          </VStack>
+        ) : notifications.length === 0 ? (
+          <Flex direction="column" align="center" py={10} color="muted.400" gap={3}>
+            <Box opacity={0.4}><LuBell size={32} /></Box>
+            <Text fontSize="sm">No notifications found</Text>
+          </Flex>
+        ) : (
+          <VStack gap={3} align="stretch">
+            {notifications.map((n) => (
+              <NotificationCard
                 key={n.id}
-                cursor="pointer"
-                transition="background 0.15s"
-                _hover={{ bg: "muted.100" }}
+                notification={n}
                 onClick={() => setSelected(n)}
-                bg={n.state === "unread" ? "yellow.50" : undefined}
-              >
-                <Table.Cell>
-                  <Badge
-                    colorPalette={SEVERITY_PALETTE[n.severity]}
-                    textTransform="capitalize"
-                  >
-                    {n.severity}
-                  </Badge>
-                </Table.Cell>
-                <Table.Cell
-                  maxW="320px"
-                  overflow="hidden"
-                  textOverflow="ellipsis"
-                  whiteSpace="nowrap"
-                  fontWeight={n.state === "unread" ? "semibold" : "normal"}
-                  fontSize="sm"
-                  color="muted.900"
-                >
-                  {n.message}
-                </Table.Cell>
-                <Table.Cell color="muted.500" fontSize="sm">
-                  {n.device?.name ?? `Device #${n.deviceId}`}
-                </Table.Cell>
-                <Table.Cell>
-                  <Badge colorPalette={STATE_PALETTE[n.state]}>
-                    {STATE_LABEL[n.state]}
-                  </Badge>
-                </Table.Cell>
-                <Table.Cell color="muted.500" fontSize="sm">
-                  {new Date(n.createdAt).toLocaleDateString()}
+              />
+            ))}
+          </VStack>
+        )}
+      </Box>
+
+      {/* Desktop: table */}
+      <Box display={{ base: "none", lg: "block" }}>
+        <Table.Root>
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Severity</Table.ColumnHeader>
+              <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Message</Table.ColumnHeader>
+              <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Device</Table.ColumnHeader>
+              <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">State</Table.ColumnHeader>
+              <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Date</Table.ColumnHeader>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <Table.Row key={i}>
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <Table.Cell key={j}>
+                      <Skeleton h="20px" rounded="md" />
+                    </Table.Cell>
+                  ))}
+                </Table.Row>
+              ))
+            ) : notifications.length === 0 ? (
+              <Table.Row>
+                <Table.Cell colSpan={5} textAlign="center" py={8} color="muted.400">
+                  <Flex direction="column" align="center" gap={2}>
+                    <Box opacity={0.4}><LuBell size={32} /></Box>
+                    <Text fontSize="sm">No notifications found</Text>
+                  </Flex>
                 </Table.Cell>
               </Table.Row>
-            ))
-          )}
-        </Table.Body>
-      </Table.Root>
+            ) : (
+              notifications.map((n) => (
+                <Table.Row
+                  key={n.id}
+                  cursor="pointer"
+                  transition="background 0.15s"
+                  _hover={{ bg: "muted.100" }}
+                  onClick={() => setSelected(n)}
+                  bg={n.state === "unread" ? "yellow.50" : undefined}
+                >
+                  <Table.Cell>
+                    <Badge
+                      colorPalette={SEVERITY_PALETTE[n.severity]}
+                      textTransform="capitalize"
+                    >
+                      {n.severity}
+                    </Badge>
+                  </Table.Cell>
+                  <Table.Cell
+                    maxW="320px"
+                    overflow="hidden"
+                    textOverflow="ellipsis"
+                    whiteSpace="nowrap"
+                    fontWeight={n.state === "unread" ? "semibold" : "normal"}
+                    fontSize="sm"
+                    color="muted.900"
+                  >
+                    {n.message}
+                  </Table.Cell>
+                  <Table.Cell color="muted.500" fontSize="sm">
+                    {n.device?.name ?? `Device #${n.deviceId}`}
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Badge colorPalette={STATE_PALETTE[n.state]}>
+                      {STATE_LABEL[n.state]}
+                    </Badge>
+                  </Table.Cell>
+                  <Table.Cell color="muted.500" fontSize="sm">
+                    {new Date(n.createdAt).toLocaleDateString()}
+                  </Table.Cell>
+                </Table.Row>
+              ))
+            )}
+          </Table.Body>
+        </Table.Root>
+      </Box>
 
       {totalPages > 1 && (
         <HStack justify="center" mt={6} gap={3}>
