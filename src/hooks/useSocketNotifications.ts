@@ -35,7 +35,11 @@ export function useSocketNotifications() {
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      console.log("Socket.IO connected ✓");
+      console.log("Socket.IO connected ✓", socket.id);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket.IO connect_error:", err.message);
     });
 
     socket.on("notification", (data: Notification) => {
