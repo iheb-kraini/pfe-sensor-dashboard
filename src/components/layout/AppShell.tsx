@@ -3,12 +3,12 @@ import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { useNotifications } from "../../hooks/useNotifications";
-import { useMqttNotifications } from "../../hooks/useMqttNotifications";
+import { useSocketNotifications } from "../../hooks/useSocketNotifications";
 import MobileSidebar from "./mobileDrawer";
 
 export function AppShell() {
   useNotifications();
-  useMqttNotifications();
+  useSocketNotifications();
 
   return (
     <Flex h="100vh" overflow="hidden" bg="surface.page">

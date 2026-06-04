@@ -163,35 +163,34 @@ export function NotificationDrawer({
                     )}
                   </Stack>
 
-                  {n.sensorSnapshot &&
-                    Object.keys(n.sensorSnapshot).length > 0 && (
-                      <>
-                        <Separator />
-                        <Stack gap={3}>
-                          <Text
-                            fontSize="xs"
-                            fontWeight="semibold"
-                            color="muted.400"
-                            textTransform="uppercase"
-                            letterSpacing="wider"
-                          >
-                            Sensor Snapshot
-                          </Text>
-                          <Box
-                            bg="muted.50"
-                            rounded="md"
-                            p={3}
-                            fontSize="xs"
-                            fontFamily="mono"
-                            color="muted.700"
-                            whiteSpace="pre-wrap"
-                            wordBreak="break-all"
-                          >
-                            {JSON.stringify(n.sensorSnapshot, null, 2)}
-                          </Box>
-                        </Stack>
-                      </>
-                    )}
+                  {n.sensorWindow && (
+                    <>
+                      <Separator />
+                      <Stack gap={3}>
+                        <Text
+                          fontSize="xs"
+                          fontWeight="semibold"
+                          color="muted.400"
+                          textTransform="uppercase"
+                          letterSpacing="wider"
+                        >
+                          Sensor Snapshot
+                        </Text>
+                        <Box
+                          bg="muted.50"
+                          rounded="md"
+                          p={3}
+                          fontSize="xs"
+                          fontFamily="mono"
+                          color="muted.700"
+                          whiteSpace="pre-wrap"
+                          wordBreak="break-all"
+                        >
+                          {JSON.stringify(n.sensorWindow, null, 2)}
+                        </Box>
+                      </Stack>
+                    </>
+                  )}
 
                   {nextStates.length > 0 && (
                     <>

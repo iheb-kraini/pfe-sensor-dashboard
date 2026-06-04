@@ -24,15 +24,15 @@ export interface Notification {
   id: number;
   deviceId: number;
   userId: number;
+  sensorWindowId: number;
+  sensorWindowTime: string;
   state: NotificationState;
   severity: SeverityLevel;
   message: string;
-  sensorSnapshot?: Record<string, any>;
   createdAt: string;
   resolvedAt: string | null;
   device?: { id: number; name: string };
-  sensorWindowId?: number;
-  sensorWindow: SensorWindow;
+  sensorWindow?: SensorWindow;
 }
 
 export interface NotificationFilters {

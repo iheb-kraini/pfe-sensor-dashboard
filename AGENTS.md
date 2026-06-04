@@ -20,7 +20,7 @@ No test framework is configured.
 - **Server state**: TanStack React Query hooks in `src/hooks/`. `QueryClient` configured with `retry: 1`, `staleTime: 30s`.
 - **State**: Zustand stores in `src/store/` (auth, notifications, sidebar).
 - **Routing**: React Router v7, `ProtectedRoute` wrapper, `AppShell` layout (sidebar + topbar).
-- **Real-time**: MQTT via WebSocket to `ws://192.168.1.23:9001` — see `src/hooks/useMqttNotifications.ts`.
+- **Real-time**: Socket.IO WebSocket to `http://localhost:3000/notifications` — see `src/hooks/useSocketNotifications.ts`. JWT passed as `auth.token` on connect. Receives `notification` events.
 - **UI**: Chakra UI v3 with `ChakraProvider value={defaultSystem}`. Toast system via `createToaster` in `src/components/ui/toaster.tsx`.
 - **Forms**: Zod schemas (`src/schemas/`) + react-hook-form.
 
@@ -37,7 +37,7 @@ No test framework is configured.
 src/
   pages/         — page-level components (auth, devices, sensor-windows, ...)
   components/    — reusable: layout/, shared/, ui/, devices/, notifications/, stats/
-  hooks/         — custom hooks (TanStack Query wrappers + MQTT)
+  hooks/         — custom hooks (TanStack Query wrappers + Socket.IO)
   store/         — Zustand stores
   api/           — axios instance + endpoint modules
   types/         — TS interfaces
