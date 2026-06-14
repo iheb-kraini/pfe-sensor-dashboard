@@ -19,4 +19,5 @@ export interface JwtPayload {
   email: string;
   role: string;
   isActive: boolean;
+  exp: number;
 }
