@@ -1,4 +1,16 @@
-import { Badge, Box, Button, Flex, HStack, Text, TooltipArrow, TooltipContent, TooltipPositioner, TooltipRoot, TooltipTrigger } from "@chakra-ui/react";
+import {
+  Badge,
+  Box,
+  Button,
+  Flex,
+  HStack,
+  Text,
+  TooltipArrow,
+  TooltipContent,
+  TooltipPositioner,
+  TooltipRoot,
+  TooltipTrigger,
+} from "@chakra-ui/react";
 import { useState } from "react";
 import { LuCopy, LuPower, LuRefreshCw } from "react-icons/lu";
 import type { Device } from "../../types/device.types";
@@ -27,6 +39,7 @@ export function DeviceInfoCard({
   onRefreshKey,
 }: Props) {
   const [copied, setCopied] = useState(false);
+  console.log(device);
 
   const handleCopyKey = () => {
     if (!device.apiKey) return;
@@ -36,32 +49,60 @@ export function DeviceInfoCard({
   };
 
   return (
-    <Box bg="white" rounded="xl" shadow="sm" border="1px solid" borderColor="gray.100" p={5}>
+    <Box
+      bg="white"
+      rounded="xl"
+      shadow="sm"
+      border="1px solid"
+      borderColor="gray.100"
+      p={5}
+    >
       <Flex justify="space-between" align="flex-start" gap={4} wrap="wrap">
         <Box flex={1} minW="200px">
           <Text fontSize="lg" fontWeight="bold" color="muted.900" mb={2}>
             {device.name}
           </Text>
           <HStack gap={4} fontSize="sm" color="muted.500" mb={1}>
-            <Text>Serial: <Text as="span" fontFamily="mono" color="muted.700">{device.serialNumber}</Text></Text>
+            <Text>
+              Serial:{" "}
+              <Text as="span" fontFamily="mono" color="muted.700">
+                {device.serialNumber}
+              </Text>
+            </Text>
             <Badge colorPalette={statusColor[device.status]} size="sm">
               {device.status}
             </Badge>
-            <Badge colorPalette={device.isActive ? "green" : "red"} size="sm" variant="outline">
+            <Badge
+              colorPalette={device.isActive ? "green" : "red"}
+              size="sm"
+              variant="outline"
+            >
               {device.isActive ? "Active" : "Inactive"}
             </Badge>
           </HStack>
           <Text fontSize="xs" color="muted.400" mb={3}>
-            Created by {device.createdBy.firstName} {device.createdBy.lastName} — {new Date(device.createdAt).toLocaleDateString()}
+            Created by {device.createdBy.firstName} {device.createdBy.lastName}{" "}
+            — {new Date(device.createdAt).toLocaleDateString()}
           </Text>
           {device.apiKey && (
             <Flex align="center" gap={2}>
-              <Text fontSize="xs" color="muted.400" fontFamily="mono" maxW="260px" truncate>
+              <Text
+                fontSize="xs"
+                color="muted.400"
+                fontFamily="mono"
+                maxW="260px"
+                truncate
+              >
                 API Key: {device.apiKey}
               </Text>
               <TooltipRoot>
                 <TooltipTrigger>
-                  <Button size="xs" variant="ghost" colorPalette={copied ? "green" : "gray"} onClick={handleCopyKey}>
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    colorPalette={copied ? "green" : "gray"}
+                    onClick={handleCopyKey}
+                  >
                     <LuCopy size={14} />
                   </Button>
                 </TooltipTrigger>
@@ -97,7 +138,13 @@ export function DeviceInfoCard({
           </TooltipRoot>
           <TooltipRoot>
             <TooltipTrigger>
-              <Button size="sm" variant="ghost" colorPalette="purple" loading={isRefreshing} onClick={onRefreshKey}>
+              <Button
+                size="sm"
+                variant="ghost"
+                colorPalette="purple"
+                loading={isRefreshing}
+                onClick={onRefreshKey}
+              >
                 <LuRefreshCw size={16} />
               </Button>
             </TooltipTrigger>
