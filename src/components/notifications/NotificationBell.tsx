@@ -53,27 +53,12 @@ export function NotificationBell() {
             <Flex
               px={4}
               py={3}
-              justify="space-between"
-              align="center"
               borderBottom="1px solid"
               borderColor="muted.100"
             >
               <Text fontWeight="semibold" fontSize="sm" color="muted.900">
                 Notifications
               </Text>
-              {unreadCount > 0 && (
-                <Box
-                  px={2}
-                  py={0.5}
-                  bg="red.100"
-                  color="red.600"
-                  rounded="full"
-                  fontSize="xs"
-                  fontWeight="semibold"
-                >
-                  {unreadCount} unread
-                </Box>
-              )}
             </Flex>
 
             {preview.length === 0 ? (

@@ -1,4 +1,4 @@
-import { Box, Button, Input, NativeSelect, Stack } from "@chakra-ui/react";
+import { Box, Button, Input, NativeSelect, Stack, Text } from "@chakra-ui/react";
 import type {
   NotificationState,
   SeverityLevel,
@@ -31,53 +31,65 @@ export function NotificationFilters({
 }: Props) {
   return (
     <Box bg="white" shadow="sm" rounded="xl" p={6} mb={6}>
-      <Stack direction={{ base: "column", sm: "row" }} gap={3} flexWrap="wrap">
-        <NativeSelect.Root maxW={{ base: "full", sm: "180px" }}>
-          <NativeSelect.Field
-            value={state}
-            onChange={(e) =>
-              onStateChange(e.target.value as NotificationState | "")
-            }
-          >
-            <option value="">All states</option>
-            <option value="unread">Unread</option>
-            <option value="in_investigation">In Investigation</option>
-            <option value="resolved">Resolved</option>
-            <option value="dismissed">Dismissed</option>
-          </NativeSelect.Field>
-          <NativeSelect.Indicator />
-        </NativeSelect.Root>
+      <Stack direction={{ base: "column", sm: "row" }} gap={3} flexWrap="wrap" alignItems="flex-end">
+        <Stack gap={1}>
+          <Text fontSize="xs" color="muted.500" fontWeight="medium">State</Text>
+          <NativeSelect.Root maxW={{ base: "full", sm: "180px" }}>
+            <NativeSelect.Field
+              value={state}
+              onChange={(e) =>
+                onStateChange(e.target.value as NotificationState | "")
+              }
+            >
+              <option value="">All states</option>
+              <option value="unread">Unread</option>
+              <option value="in_investigation">In Investigation</option>
+              <option value="resolved">Resolved</option>
+              <option value="dismissed">Dismissed</option>
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
+        </Stack>
 
-        <NativeSelect.Root maxW={{ base: "full", sm: "150px" }}>
-          <NativeSelect.Field
-            value={severity}
-            onChange={(e) =>
-              onSeverityChange(e.target.value as SeverityLevel | "")
-            }
-          >
-            <option value="">All severities</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
-          </NativeSelect.Field>
-          <NativeSelect.Indicator />
-        </NativeSelect.Root>
+        <Stack gap={1}>
+          <Text fontSize="xs" color="muted.500" fontWeight="medium">Severity</Text>
+          <NativeSelect.Root maxW={{ base: "full", sm: "150px" }}>
+            <NativeSelect.Field
+              value={severity}
+              onChange={(e) =>
+                onSeverityChange(e.target.value as SeverityLevel | "")
+              }
+            >
+              <option value="">All severities</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </NativeSelect.Field>
+            <NativeSelect.Indicator />
+          </NativeSelect.Root>
+        </Stack>
 
-        <Input
-          type="date"
-          value={from}
-          onChange={(e) => onFromChange(e.target.value)}
-          maxW={{ base: "full", sm: "160px" }}
-          fontSize="sm"
-        />
-        <Input
-          type="date"
-          value={to}
-          onChange={(e) => onToChange(e.target.value)}
-          maxW={{ base: "full", sm: "160px" }}
-          fontSize="sm"
-        />
+        <Stack gap={1}>
+          <Text fontSize="xs" color="muted.500" fontWeight="medium">From</Text>
+          <Input
+            type="date"
+            value={from}
+            onChange={(e) => onFromChange(e.target.value)}
+            maxW={{ base: "full", sm: "160px" }}
+            fontSize="sm"
+          />
+        </Stack>
+        <Stack gap={1}>
+          <Text fontSize="xs" color="muted.500" fontWeight="medium">To</Text>
+          <Input
+            type="date"
+            value={to}
+            onChange={(e) => onToChange(e.target.value)}
+            maxW={{ base: "full", sm: "160px" }}
+            fontSize="sm"
+          />
+        </Stack>
 
         {hasFilters && (
           <Button size="sm" variant="ghost" colorPalette="red" onClick={onReset}>

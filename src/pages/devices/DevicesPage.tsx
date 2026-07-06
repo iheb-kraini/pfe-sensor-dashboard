@@ -65,16 +65,21 @@ export function DevicesPage() {
 
   return (
     <Box>
-      <HStack justify="space-between" mb={6}>
-        <Heading size="xl" fontWeight="extrabold" color="muted.900">Devices</Heading>
-        <Button
-          size={{ base: "sm", md: "md" }}
-          colorPalette="blue"
-          onClick={openCreate}
-        >
-          + New Device
-        </Button>
-      </HStack>
+      <Box mb={6}>
+        <HStack justify="space-between">
+          <Heading size="xl" fontWeight="extrabold" color="muted.900">Devices</Heading>
+          <Button
+            size={{ base: "sm", md: "md" }}
+            colorPalette="blue"
+            onClick={openCreate}
+          >
+            + New Device
+          </Button>
+        </HStack>
+        <Text color="muted.400" fontSize="sm" mt={1}>
+          View and manage connected devices
+        </Text>
+      </Box>
 
       <DeviceFilters
         name={name}

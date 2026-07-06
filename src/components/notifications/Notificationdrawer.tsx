@@ -5,7 +5,6 @@ import {
   CloseButton,
   Drawer,
   Flex,
-  Grid,
   Heading,
   HStack,
   Portal,
@@ -19,6 +18,7 @@ import type {
   Notification,
   NotificationState,
 } from "../../types/notification.types";
+import { DetailRow } from "./DetailRow";
 
 const SEVERITY_PALETTE: Record<string, string> = {
   low: "blue",
@@ -47,25 +47,6 @@ const NEXT_STATES: Record<NotificationState, NotificationState[]> = {
   resolved: [],
   dismissed: [],
 };
-
-function DetailRow({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Grid templateColumns="140px 1fr" gap={2} alignItems="start">
-      <Text fontSize="sm" color="muted.500" fontWeight="medium">
-        {label}
-      </Text>
-      <Box fontSize="sm" color="muted.900">
-        {children}
-      </Box>
-    </Grid>
-  );
-}
 
 interface Props {
   notification: Notification | null;
@@ -162,35 +143,6 @@ export function NotificationDrawer({
                       </DetailRow>
                     )}
                   </Stack>
-
-                  {n.sensorWindow && (
-                    <>
-                      <Separator />
-                      <Stack gap={3}>
-                        <Text
-                          fontSize="xs"
-                          fontWeight="semibold"
-                          color="muted.400"
-                          textTransform="uppercase"
-                          letterSpacing="wider"
-                        >
-                          Sensor Snapshot
-                        </Text>
-                        <Box
-                          bg="muted.50"
-                          rounded="md"
-                          p={3}
-                          fontSize="xs"
-                          fontFamily="mono"
-                          color="muted.700"
-                          whiteSpace="pre-wrap"
-                          wordBreak="break-all"
-                        >
-                          {JSON.stringify(n.sensorWindow, null, 2)}
-                        </Box>
-                      </Stack>
-                    </>
-                  )}
 
                   {nextStates.length > 0 && (
                     <>
