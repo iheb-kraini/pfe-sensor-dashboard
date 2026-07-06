@@ -5,7 +5,6 @@ import {
   CloseButton,
   Drawer,
   Flex,
-  Grid,
   Heading,
   HStack,
   Portal,
@@ -19,6 +18,7 @@ import type {
   Notification,
   NotificationState,
 } from "../../types/notification.types";
+import { DetailRow } from "./DetailRow";
 
 const SEVERITY_PALETTE: Record<string, string> = {
   low: "blue",
@@ -47,25 +47,6 @@ const NEXT_STATES: Record<NotificationState, NotificationState[]> = {
   resolved: [],
   dismissed: [],
 };
-
-function DetailRow({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Grid templateColumns="140px 1fr" gap={2} alignItems="start">
-      <Text fontSize="sm" color="muted.500" fontWeight="medium">
-        {label}
-      </Text>
-      <Box fontSize="sm" color="muted.900">
-        {children}
-      </Box>
-    </Grid>
-  );
-}
 
 interface Props {
   notification: Notification | null;
