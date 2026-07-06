@@ -10,7 +10,7 @@ export function ProtectedRoute() {
     console.log("log out !!");
     logout();
     queryClient.clear();
-    return <Navigate to={"/"} />;
+    return <Navigate to={"/login"} />;
   }
   return <Outlet />;
 }

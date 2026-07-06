@@ -3,11 +3,8 @@ import { Box, Button, HStack, Input, Stack, Text, Kbd } from "@chakra-ui/react";
 interface Props {
   from: string;
   rangeHours: number;
-  hasFilters: boolean;
   onFromChange: (v: string) => void;
   onRangeChange: (hours: number) => void;
-  onApply: () => void;
-  onClear: () => void;
 }
 
 const RANGE_OPTIONS = [
@@ -20,11 +17,8 @@ const RANGE_OPTIONS = [
 export function SensorWindowFilters({
   from,
   rangeHours,
-  hasFilters,
   onFromChange,
   onRangeChange,
-  onApply,
-  onClear,
 }: Props) {
   const to = from
     ? new Date(new Date(from).getTime() + rangeHours * 60 * 60 * 1000)
@@ -84,25 +78,7 @@ export function SensorWindowFilters({
               </Kbd>
             </Stack>
           )}
-          <Button
-            size="sm"
-            colorPalette="blue"
-            alignSelf="flex-end"
-            onClick={onApply}
-          >
-            Apply
-          </Button>
-          {hasFilters && (
-            <Button
-              size="sm"
-              variant="ghost"
-              colorPalette="red"
-              alignSelf="flex-end"
-              onClick={onClear}
-            >
-              Clear
-            </Button>
-          )}
+
         </HStack>
       </Stack>
     </Box>
