@@ -13,8 +13,9 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { sensorWindowsApi } from "../../api/endpoints/sensorWindows.api";
-import { computeMetrics } from "../../utils/sensorMetrics";
+import { computeMetrics, computeFft } from "../../utils/sensorMetrics";
 import type { SensorWindow } from "../../types/sensorWindow.types";
+import { FftSpectrumChart } from "../../components/sensor-windows/FftSpectrumChart";
 
 // ── Small stat card ───────────────────────────────────────────────────────────
 
@@ -148,7 +149,7 @@ function MapCard({
   lon: number | null;
   isLoading: boolean;
 }) {
-  if (isLoading) return <Skeleton h="220px" rounded="xl" />;
+  if (isLoading) return <Skeleton h="350px" rounded="xl" />;
 
   if (!lat || !lon) {
     return (
@@ -201,85 +202,9 @@ function MapCard({
       <iframe
         src={src}
         width="100%"
-        height="220px"
+        height="350px"
         style={{ border: "none", display: "block" }}
       />{" "}
-    </Box>
-  );
-}
-
-// ── Raw samples ───────────────────────────────────────────────────────────────
-
-function SamplesCard({
-  samples,
-  isLoading,
-}: {
-  samples: SensorWindow["samples"];
-  isLoading: boolean;
-}) {
-  const [expanded, setExpanded] = useState(false);
-  const visible = expanded ? samples : samples.slice(0, 10);
-
-  return (
-    <Box
-      bg="white"
-      rounded="xl"
-      p={5}
-      borderWidth="1px"
-      borderColor="gray.100"
-      shadow="sm"
-    >
-      <HStack justify="space-between" mb={3}>
-        <Text
-          fontSize="xs"
-          color="gray.400"
-          fontWeight="semibold"
-          textTransform="uppercase"
-          letterSpacing="wider"
-        >
-          Raw Samples ({samples.length})
-        </Text>
-        {samples.length > 10 && (
-          <Button
-            size="xs"
-            variant="ghost"
-            colorPalette="blue"
-            onClick={() => setExpanded((e) => !e)}
-          >
-            {expanded ? "Show less" : `Show all ${samples.length}`}
-          </Button>
-        )}
-      </HStack>
-      {isLoading ? (
-        <Skeleton h="120px" rounded="md" />
-      ) : (
-        <Box
-          bg="gray.50"
-          rounded="md"
-          p={3}
-          fontSize="xs"
-          fontFamily="mono"
-          color="gray.600"
-          maxH={expanded ? "400px" : "220px"}
-          overflowY="auto"
-        >
-          <Grid templateColumns="40px 1fr 1fr 1fr" gap={1} mb={1}>
-            {["#", "X", "Y", "Z"].map((h) => (
-              <Text key={h} fontWeight="bold" color="gray.400">
-                {h}
-              </Text>
-            ))}
-          </Grid>
-          {visible.map((s, i) => (
-            <Grid key={i} templateColumns="40px 1fr 1fr 1fr" gap={1}>
-              <Text color="gray.300">{i + 1}</Text>
-              <Text>{s.x.toFixed(4)}</Text>
-              <Text>{s.y.toFixed(4)}</Text>
-              <Text>{s.z.toFixed(4)}</Text>
-            </Grid>
-          ))}
-        </Box>
-      )}
     </Box>
   );
 }
@@ -305,6 +230,7 @@ export function SensorWindowDetailPage() {
   }, [id]);
 
   const metrics = data?.samples.length ? computeMetrics(data.samples) : null;
+  const fft = data?.samples.length ? computeFft(data.samples) : null;
 
   return (
     <Box p={6}>
@@ -339,7 +265,7 @@ export function SensorWindowDetailPage() {
         <SimpleGrid columns={{ base: 2, md: 4 }} gap={4}>
           <StatCard
             label="Speed"
-            value={data?.speedKmph ?? "—"}
+            value={data?.speedKmph != null ? Number(data.speedKmph).toFixed(2) : "—"}
             unit={data?.speedKmph != null ? "km/h" : undefined}
             accent="blue.400"
             isLoading={isLoading}
@@ -414,8 +340,10 @@ export function SensorWindowDetailPage() {
           )}
         </Box>
 
-        {/* Raw samples */}
-        {data && <SamplesCard samples={data.samples} isLoading={isLoading} />}
+        {/* FFT Spectrum */}
+        <Box>
+          <FftSpectrumChart fft={fft} isLoading={isLoading} />
+        </Box>
       </Stack>
     </Box>
   );

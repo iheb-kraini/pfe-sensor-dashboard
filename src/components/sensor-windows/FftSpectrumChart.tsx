@@ -1,5 +1,5 @@
 import { Box, Skeleton, Text } from "@chakra-ui/react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { VibrationAnalysis } from "../../types/sensorWindow.types";
 
 interface Props {
@@ -8,11 +8,7 @@ interface Props {
 }
 
 export function FftSpectrumChart({ fft, isLoading }: Props) {
-  const chartData = fft?.peaks.map((p) => ({
-    freq: p.freq,
-    amp: p.amplitude,
-    isDominant: p.freq === fft.dominantFreq,
-  })) ?? [];
+  const chartData = fft?.spectrum ?? [];
 
   return (
     <Box bg="white" rounded="xl" shadow="sm" border="1px solid" borderColor="gray.200" p={4}>
@@ -20,7 +16,7 @@ export function FftSpectrumChart({ fft, isLoading }: Props) {
         FFT Spectrum
         {fft && (
           <Text as="span" fontSize="xs" color="muted.400" fontWeight="normal" ml={2}>
-            — Dominant: {fft.dominantFreq.toFixed(1)} Hz
+            — Dominant: {fft.dominantFreq.toFixed(1)} Hz @ {fft.amplitude.toFixed(3)} g
           </Text>
         )}
       </Text>
@@ -33,11 +29,14 @@ export function FftSpectrumChart({ fft, isLoading }: Props) {
         </Box>
       ) : (
         <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis
               dataKey="freq"
+              type="number"
+              domain={["dataMin", "dataMax"]}
               tick={{ fontSize: 11 }}
+              tickFormatter={(v) => Number(v).toFixed(0)}
               label={{ value: "Hz", position: "insideBottomRight", offset: -4, style: { fontSize: 10, fill: "#888" } }}
             />
             <YAxis
@@ -45,17 +44,26 @@ export function FftSpectrumChart({ fft, isLoading }: Props) {
               label={{ value: "g", angle: -90, position: "insideLeft", offset: 10, style: { fontSize: 10, fill: "#888" } }}
             />
             <Tooltip
-              formatter={(value) => [Number(value).toFixed(3), "Amplitude"]}
+              formatter={(value) => [Number(value).toFixed(4), "Amplitude"]}
               labelFormatter={(label) => `${Number(label).toFixed(1)} Hz`}
               contentStyle={{ fontSize: 12 }}
             />
-            <Bar
-              dataKey="amp"
-              fill="#3B82F6"
-              radius={[2, 2, 0, 0]}
-              maxBarSize={20}
+            <defs>
+              <linearGradient id="fftGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.05} />
+              </linearGradient>
+            </defs>
+            <Area
+              type="monotone"
+              dataKey="amplitude"
+              stroke="#3B82F6"
+              strokeWidth={1.5}
+              fill="url(#fftGradient)"
+              dot={false}
+              isAnimationActive={false}
             />
-          </BarChart>
+          </AreaChart>
         </ResponsiveContainer>
       )}
     </Box>

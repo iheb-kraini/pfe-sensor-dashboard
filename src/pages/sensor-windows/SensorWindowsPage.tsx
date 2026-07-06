@@ -89,7 +89,7 @@ export function SensorWindowsPage() {
   }, [allData]);
 
   return (
-    <Box p={6}>
+    <Box p={{ base: 3, md: 6 }}>
       <HStack mb={6} gap={3}>
         <Button size="sm" variant="ghost" onClick={() => navigate("/devices")}>
           ← Back

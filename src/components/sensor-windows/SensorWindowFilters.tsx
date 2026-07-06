@@ -25,7 +25,7 @@ export function SensorWindowFilters({
     : null;
 
   return (
-    <Box bg="white" shadow="sm" rounded="xl" p={6} mb={6}>
+    <Box bg="white" shadow="sm" rounded="xl" p={{ base: 4, md: 6 }} mb={6}>
       <Stack gap={3}>
         <HStack gap={4} flexWrap="wrap">
           <Stack gap={1}>
@@ -36,7 +36,7 @@ export function SensorWindowFilters({
               type="datetime-local"
               value={from}
               onChange={(e) => onFromChange(e.target.value)}
-              maxW="220px"
+              maxW={{ base: "full", md: "220px" }}
               size="sm"
             />
           </Stack>

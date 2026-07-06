@@ -37,6 +37,7 @@ export interface VibrationAnalysis {
     dominantFreq: number;
     amplitude: number;
     peaks: { freq: number; amplitude: number }[];
+    spectrum: { freq: number; amplitude: number }[];
     freqResolution: number;
   };
   processedAt: string;
