@@ -1,22 +1,15 @@
-import { Badge, Box, Flex, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import {
   type Notification,
   NotificationState,
-  SeverityLevel,
+  type SeverityLevel,
 } from "../../types/notification.types";
 
-const severityColor: Record<SeverityLevel, string> = {
-  low: "blue",
-  medium: "yellow",
-  high: "orange",
-  critical: "red",
-};
-
-const stateColor: Record<NotificationState, string> = {
-  unread: "red",
-  in_investigation: "orange",
-  resolved: "green",
-  dismissed: "gray",
+const severityDot: Record<SeverityLevel, string> = {
+  low: "blue.400",
+  medium: "yellow.400",
+  high: "orange.400",
+  critical: "red.400",
 };
 
 interface Props {
@@ -35,98 +28,69 @@ export function NotificationItem({ notification, onStateChange }: Props) {
       _hover={{ bg: "muted.50" }}
       transition="all 0.15s"
     >
-      <Flex justify="space-between" align="flex-start" gap={2}>
-        <Box flex={1}>
-          <Flex gap={2} align="center" mb={1} flexWrap="wrap">
-            <Badge
-              colorPalette={severityColor[notification.severity]}
-              size="sm"
-            >
-              {notification.severity}
-            </Badge>
-            <Badge
-              colorPalette={stateColor[notification.state]}
-              size="sm"
-              variant="outline"
-            >
-              {notification.state.replace("_", " ")}
-            </Badge>
+      <Flex gap={3} align="flex-start">
+        <Box
+          mt={1.5}
+          w="8px"
+          h="8px"
+          rounded="full"
+          bg={severityDot[notification.severity]}
+          flexShrink={0}
+        />
+        <Box flex={1} minW={0}>
+          <Text fontSize="sm" color="muted.900" fontWeight="medium" lineClamp={2}>
+            {notification.message}
+          </Text>
+          <Flex gap={1} mt={0.5} align="center">
             {notification.device && (
-              <Text fontSize="xs" color="muted.500">
+              <Text fontSize="xs" color="muted.500" flexShrink={0}>
                 {notification.device.name}
               </Text>
             )}
+            <Text fontSize="xs" color="muted.400">
+              {new Date(notification.createdAt).toLocaleString()}
+            </Text>
           </Flex>
-          <Text fontSize="sm" color="muted.900" fontWeight="medium">
-            {notification.message}
-          </Text>
-          <Text fontSize="xs" color="muted.400" mt={1}>
-            {new Date(notification.createdAt).toLocaleString()}
-          </Text>
         </Box>
 
         {onStateChange && notification.state === NotificationState.UNREAD && (
           <Flex gap={1} flexShrink={0}>
-            <Box
-              as="button"
-              fontSize="xs"
-              px={2}
-              py={1}
-              rounded="md"
-              bg="orange.100"
-              color="orange.700"
-              fontWeight="semibold"
-              cursor="pointer"
-              _hover={{ bg: "orange.200" }}
+            <Button
+              size="xs"
+              colorPalette="blue"
+              variant="subtle"
               onClick={() =>
-                onStateChange(
-                  notification.id,
-                  NotificationState.IN_INVESTIGATION,
-                )
+                onStateChange(notification.id, NotificationState.IN_INVESTIGATION)
               }
             >
               Investigate
-            </Box>
-            <Box
-              as="button"
-              fontSize="xs"
-              px={2}
-              py={1}
-              rounded="md"
-              bg="muted.100"
-              color="muted.600"
-              fontWeight="semibold"
-              cursor="pointer"
-              _hover={{ bg: "muted.200" }}
+            </Button>
+            <Button
+              size="xs"
+              variant="ghost"
+              colorPalette="gray"
               onClick={() =>
                 onStateChange(notification.id, NotificationState.DISMISSED)
               }
             >
               Dismiss
-            </Box>
+            </Button>
           </Flex>
         )}
 
         {onStateChange &&
           notification.state === NotificationState.IN_INVESTIGATION && (
-            <Box
-              as="button"
-              fontSize="xs"
-              px={2}
-              py={1}
-              rounded="md"
-              bg="green.100"
-              color="green.700"
-              fontWeight="semibold"
-              cursor="pointer"
+            <Button
+              size="xs"
+              colorPalette="blue"
+              variant="subtle"
               flexShrink={0}
-              _hover={{ bg: "green.200" }}
               onClick={() =>
                 onStateChange(notification.id, NotificationState.RESOLVED)
               }
             >
               Resolve
-            </Box>
+            </Button>
           )}
       </Flex>
     </Box>
