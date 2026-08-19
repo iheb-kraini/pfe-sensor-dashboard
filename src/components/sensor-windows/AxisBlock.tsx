@@ -4,8 +4,8 @@ interface AxisBlockProps {
   axis: string;
   rms: number;
   p2p: number;
-  min: number;
-  max: number;
+  min?: number;
+  max?: number;
   isDominant: boolean;
 }
 
@@ -19,6 +19,7 @@ export function AxisBlock({
 }: AxisBlockProps) {
   return (
     <Box
+      width={"full"}
       bg={isDominant ? "orange.50" : "gray.50"}
       rounded="lg"
       p={4}
@@ -44,8 +45,8 @@ export function AxisBlock({
         {[
           { label: "RMS", value: rms.toFixed(4) },
           { label: "P2P", value: p2p.toFixed(4) },
-          { label: "Min", value: min.toFixed(4) },
-          { label: "Max", value: max.toFixed(4) },
+          { label: "Min", value: min != null ? min.toFixed(4) : "—" },
+          { label: "Max", value: max != null ? max.toFixed(4) : "—" },
         ].map(({ label, value }) => (
           <Box key={label}>
             <Text fontSize="xs" color="gray.400" fontWeight="medium">

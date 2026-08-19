@@ -81,93 +81,97 @@ export function DevicesPage() {
         </Text>
       </Box>
 
-      <DeviceFilters
-        name={name}
-        status={status}
-        isActive={isActive}
-        hasFilters={hasFilters}
-        onNameChange={setName}
-        onStatusChange={setStatus}
-        onIsActiveChange={setIsActive}
-        onReset={resetFilters}
-      />
-
       {isError && (
         <Box bg="red.50" color="red.600" px={4} py={3} rounded="md" mb={4}>
           Failed to load devices. Please try again.
         </Box>
       )}
 
-      <Box display={{ base: "block", lg: "none" }}>
-        {isLoading ? (
-          <VStack gap={3}>
-            {[0, 1, 2].map((i) => (
-              <Skeleton key={i} h="150px" rounded="xl" w="full" />
-            ))}
-          </VStack>
-        ) : isEmpty ? (
-          <Flex direction="column" align="center" py={10} color="muted.400" gap={3}>
-            <Box opacity={0.4}><LuRadio size={40} /></Box>
-            <Text fontSize="sm">No devices found</Text>
-          </Flex>
-        ) : (
-          <VStack gap={3} align="stretch">
-            {data?.data.map((device) => (
-              <DeviceCard
-                key={device.id}
-                device={device}
-                onEdit={openEdit}
-                onCopy={handleCopy}
-                copiedId={copiedId}
-                navigate={navigate}
-              />
-            ))}
-          </VStack>
+      <Box bg="white" rounded="xl" shadow="sm" p={6}>
+        <DeviceFilters
+          name={name}
+          status={status}
+          isActive={isActive}
+          hasFilters={hasFilters}
+          onNameChange={setName}
+          onStatusChange={setStatus}
+          onIsActiveChange={setIsActive}
+          onReset={resetFilters}
+        />
+
+        <Box display={{ base: "block", lg: "none" }} mt={4}>
+          {isLoading ? (
+            <VStack gap={3}>
+              {[0, 1, 2].map((i) => (
+                <Skeleton key={i} h="150px" rounded="xl" w="full" />
+              ))}
+            </VStack>
+          ) : isEmpty ? (
+            <Flex direction="column" align="center" py={10} color="muted.400" gap={3}>
+              <Box opacity={0.4}><LuRadio size={40} /></Box>
+              <Text fontSize="sm">No devices found</Text>
+            </Flex>
+          ) : (
+            <VStack gap={3} align="stretch">
+              {data?.data.map((device) => (
+                <DeviceCard
+                  key={device.id}
+                  device={device}
+                  onEdit={openEdit}
+                  onCopy={handleCopy}
+                  copiedId={copiedId}
+                  navigate={navigate}
+                />
+              ))}
+            </VStack>
+          )}
+        </Box>
+
+        <Box display={{ base: "none", lg: "block" }}>
+          <Box overflow="hidden" rounded="xl">
+            <Table.Root bg="transparent">
+            <DevicesTable
+              data={data}
+              isLoading={isLoading}
+              isEmpty={isEmpty}
+              openEdit={openEdit}
+              handleToggleActive={handleToggleActive}
+              isActivating={isActivating}
+              isDeactivating={isDeactivating}
+              refreshApiKey={refreshApiKey}
+              isRefreshing={isRefreshing}
+              handleCopy={handleCopy}
+              copiedId={copiedId}
+              navigate={navigate}
+            />
+          </Table.Root>
+          </Box>
+        </Box>
+
+        {totalPages > 1 && (
+          <HStack justify="center" mt={6} gap={3}>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={page === 1}
+              onClick={prevPage}
+            >
+              Previous
+            </Button>
+            <Text fontSize="sm" color="muted.500">
+              Page {page} of {totalPages}
+            </Text>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={page === totalPages}
+              onClick={nextPage}
+            >
+              Next
+            </Button>
+          </HStack>
         )}
       </Box>
-
-      <Box display={{ base: "none", lg: "block" }}>
-        <Table.Root>
-          <DevicesTable
-            data={data}
-            isLoading={isLoading}
-            isEmpty={isEmpty}
-            openEdit={openEdit}
-            handleToggleActive={handleToggleActive}
-            isActivating={isActivating}
-            isDeactivating={isDeactivating}
-            refreshApiKey={refreshApiKey}
-            isRefreshing={isRefreshing}
-            handleCopy={handleCopy}
-            copiedId={copiedId}
-            navigate={navigate}
-          />
-        </Table.Root>
-      </Box>
-
-      {totalPages > 1 && (
-        <HStack justify="center" mt={6} gap={3}>
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={page === 1}
-            onClick={prevPage}
-          >
-            Previous
-          </Button>
-          <Text fontSize="sm" color="muted.500">
-            Page {page} of {totalPages}
-          </Text>
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={page === totalPages}
-            onClick={nextPage}
-          >
-            Next
-          </Button>
-        </HStack>
-      )}
 
       <DeviceFormModal open={open} onClose={onClose} device={selectedDevice} />
     </Box>

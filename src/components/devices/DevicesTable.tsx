@@ -45,7 +45,7 @@ export function DevicesTable({
   return (
     <>
       <Table.Header>
-        <Table.Row>
+        <Table.Row bg="transparent">
           <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Name</Table.ColumnHeader>
           <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Serial Number</Table.ColumnHeader>
           <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Status</Table.ColumnHeader>
@@ -57,7 +57,7 @@ export function DevicesTable({
       <Table.Body>
         {isLoading ? (
           Array.from({ length: 5 }).map((_, i) => (
-            <Table.Row key={i}>
+            <Table.Row key={i} bg="transparent">
               {Array.from({ length: 6 }).map((_, j) => (
                 <Table.Cell key={j}>
                   <Skeleton h="20px" rounded="md" />
@@ -66,14 +66,14 @@ export function DevicesTable({
             </Table.Row>
           ))
         ) : isEmpty ? (
-          <Table.Row>
+          <Table.Row bg="transparent">
             <Table.Cell colSpan={6} textAlign="center" py={8} color="muted.400">
               No devices found
             </Table.Cell>
           </Table.Row>
         ) : (
           data?.data.map((device) => (
-            <Table.Row key={device.id} transition="background 0.15s" _hover={{ bg: "muted.100" }}>
+            <Table.Row key={device.id} bg="transparent" transition="background 0.15s" _hover={{ bg: "muted.100" }}>
               <Table.Cell fontWeight="medium" color="muted.900">{device.name}</Table.Cell>
               <Table.Cell color="muted.500" fontSize="sm">
                 {device.serialNumber}
