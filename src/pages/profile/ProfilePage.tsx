@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   Card,
-  Center,
   Field,
   Heading,
   HStack,
@@ -51,118 +50,115 @@ export function ProfilePage() {
   };
 
   return (
-    <Center>
-      <Box maxW="520px" w="full">
-        <Heading size="xl" fontWeight="extrabold" mb={6} color="muted.900">
-          Profile
-        </Heading>
-        <Card.Root overflow="hidden" shadow="sm">
-          <Box h="3px" bg="accent" />
-          <Card.Body>
-            <Stack gap={6}>
-              <HStack gap={4}>
-                <Avatar.Root size="xl">
-                  <Avatar.Fallback>
-                    {user.firstName[0]}
-                    {user.lastName[0]}
-                  </Avatar.Fallback>
-                </Avatar.Root>
-                <Stack gap={1} flex={1}>
-                  <Text fontWeight="bold" fontSize="lg" color="muted.900">
-                    {user.firstName} {user.lastName}
-                  </Text>
-                  <Badge
-                    colorPalette={user.role === "admin" ? "purple" : "blue"}
-                    w="fit-content"
-                    textTransform="capitalize"
-                    display="flex"
-                    alignItems="center"
-                    gap={1}
-                  >
-                    {user.role === "admin" ? <LuShield size={12} /> : <LuUser size={12} />}
-                    {user.role}
-                  </Badge>
-                </Stack>
-                {!editing && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    colorPalette="blue"
-                    onClick={() => setEditing(true)}
-                  >
-                    <LuPencil size={16} />
-                    <Text ml={1}>Edit</Text>
-                  </Button>
-                )}
-              </HStack>
+    <Box>
+      <HStack justify="space-between" align="flex-start" mb={6}>
+        <Box>
+          <Heading size="xl" fontWeight="extrabold" color="muted.900">
+            Profile
+          </Heading>
+          <Text color="muted.400" fontSize="sm" mt={1}>
+            Manage your account settings
+          </Text>
+        </Box>
+        <PushToggle />
+      </HStack>
 
-              {editing ? (
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <Stack gap={4}>
-                    <Field.Root invalid={!!errors.firstName}>
-                      <Field.Label>First Name</Field.Label>
-                      <Input {...register("firstName")} />
-                      <Field.ErrorText>{errors.firstName?.message}</Field.ErrorText>
-                    </Field.Root>
-
-                    <Field.Root invalid={!!errors.lastName}>
-                      <Field.Label>Last Name</Field.Label>
-                      <Input {...register("lastName")} />
-                      <Field.ErrorText>{errors.lastName?.message}</Field.ErrorText>
-                    </Field.Root>
-
-                    <Field.Root>
-                      <Field.Label>Email</Field.Label>
-                      <Input value={user.email} disabled />
-                    </Field.Root>
-
-                    <Field.Root>
-                      <Field.Label>Account Status</Field.Label>
-                      <Badge colorPalette={user.isActive ? "green" : "red"} w="fit-content">
-                        {user.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </Field.Root>
-
-                    <HStack gap={3} justify="flex-end" pt={2}>
-                      <Button variant="ghost" onClick={handleCancel} disabled={isPending}>
-                        Cancel
-                      </Button>
-                      <Button type="submit" colorPalette="blue" loading={isPending}>
-                        Save Changes
-                      </Button>
-                    </HStack>
-                  </Stack>
-                </form>
-              ) : (
-                <Stack gap={3}>
-                  <InfoRow label="Email" value={user.email} />
-                  <InfoRow label="First Name" value={user.firstName} />
-                  <InfoRow label="Last Name" value={user.lastName} />
-                  <InfoRow
-                    label="Account Status"
-                    value={
-                      <Badge colorPalette={user.isActive ? "green" : "red"}>
-                        {user.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    }
-                  />
-                </Stack>
+      <Card.Root overflow="hidden" shadow="sm">
+        <Box h="3px" bg="accent" />
+        <Card.Body>
+          <Stack gap={6}>
+            <HStack gap={4}>
+              <Avatar.Root size="xl">
+                <Avatar.Fallback>
+                  {user.firstName[0]}
+                  {user.lastName[0]}
+                </Avatar.Fallback>
+              </Avatar.Root>
+              <Stack gap={1} flex={1}>
+                <Text fontWeight="bold" fontSize="lg" color="muted.900">
+                  {user.firstName} {user.lastName}
+                </Text>
+                <Badge
+                  colorPalette={user.role === "admin" ? "purple" : "blue"}
+                  w="fit-content"
+                  textTransform="capitalize"
+                  display="flex"
+                  alignItems="center"
+                  gap={1}
+                >
+                  {user.role === "admin" ? <LuShield size={12} /> : <LuUser size={12} />}
+                  {user.role}
+                </Badge>
+              </Stack>
+              {!editing && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  colorPalette="blue"
+                  onClick={() => setEditing(true)}
+                >
+                  <LuPencil size={16} />
+                  <Text ml={1}>Edit</Text>
+                </Button>
               )}
-            </Stack>
-          </Card.Body>
-        </Card.Root>
+            </HStack>
 
-        <Card.Root overflow="hidden" shadow="sm" mt={6}>
-          <Box h="3px" bg="accent" />
-          <Card.Body>
-            <Heading size="md" mb={4}>
-              Notifications
-            </Heading>
-            <PushToggle />
-          </Card.Body>
-        </Card.Root>
-      </Box>
-    </Center>
+            {editing ? (
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <Stack gap={4}>
+                  <Field.Root invalid={!!errors.firstName}>
+                    <Field.Label>First Name</Field.Label>
+                    <Input {...register("firstName")} />
+                    <Field.ErrorText>{errors.firstName?.message}</Field.ErrorText>
+                  </Field.Root>
+
+                  <Field.Root invalid={!!errors.lastName}>
+                    <Field.Label>Last Name</Field.Label>
+                    <Input {...register("lastName")} />
+                    <Field.ErrorText>{errors.lastName?.message}</Field.ErrorText>
+                  </Field.Root>
+
+                  <Field.Root>
+                    <Field.Label>Email</Field.Label>
+                    <Input value={user.email} disabled />
+                  </Field.Root>
+
+                  <Field.Root>
+                    <Field.Label>Account Status</Field.Label>
+                    <Badge colorPalette={user.isActive ? "green" : "red"} w="fit-content">
+                      {user.isActive ? "Active" : "Inactive"}
+                    </Badge>
+                  </Field.Root>
+
+                  <HStack gap={3} justify="flex-end" pt={2}>
+                    <Button variant="ghost" onClick={handleCancel} disabled={isPending}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" colorPalette="blue" loading={isPending}>
+                      Save Changes
+                    </Button>
+                  </HStack>
+                </Stack>
+              </form>
+            ) : (
+              <Stack gap={3}>
+                <InfoRow label="Email" value={user.email} />
+                <InfoRow label="First Name" value={user.firstName} />
+                <InfoRow label="Last Name" value={user.lastName} />
+                <InfoRow
+                  label="Account Status"
+                  value={
+                    <Badge colorPalette={user.isActive ? "green" : "red"}>
+                      {user.isActive ? "Active" : "Inactive"}
+                    </Badge>
+                  }
+                />
+              </Stack>
+            )}
+          </Stack>
+        </Card.Body>
+      </Card.Root>
+    </Box>
   );
 }
 

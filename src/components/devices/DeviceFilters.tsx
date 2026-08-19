@@ -39,7 +39,7 @@ export function DeviceFilters({
             value={status}
             onChange={(e) => onStatusChange(e.target.value as DeviceStatus | "")}
           >
-            <option value="">All statuses</option>
+            <option value="">All status</option>
             <option value="online">Online</option>
             <option value="offline">Offline</option>
             <option value="maintenance">Maintenance</option>
@@ -55,7 +55,7 @@ export function DeviceFilters({
               onIsActiveChange(v === "" ? "" : v === "true");
             }}
           >
-            <option value="">All devices</option>
+            <option value="">Active / Inactive</option>
             <option value="true">Active</option>
             <option value="false">Inactive</option>
           </NativeSelect.Field>

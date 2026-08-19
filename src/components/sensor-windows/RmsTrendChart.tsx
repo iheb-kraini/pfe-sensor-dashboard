@@ -30,9 +30,9 @@ const AXIS_CONFIG = [
   { key: "rmsZ", label: "Z", color: "#F59E0B" },
 ] as const;
 
-const formatBucketTime = (ms: number) => {
+const formatAxisTime = (ms: number) => {
   const d = new Date(ms);
-  return `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 };
 
 export function RmsTrendChart({
@@ -80,7 +80,7 @@ export function RmsTrendChart({
       {isLoading ? (
         <Skeleton height="380px" rounded="lg" />
       ) : data.length === 0 ? (
-        <Box textAlign="center" py={16} color="gray.400">
+        <Box height="380px" display="flex" alignItems="center" justifyContent="center" color="gray.400">
           No metric data found
         </Box>
       ) : (
@@ -95,9 +95,10 @@ export function RmsTrendChart({
               type="number"
               domain={["dataMin", "dataMax"]}
               scale="time"
-              tickFormatter={formatBucketTime}
+              tickFormatter={formatAxisTime}
               tick={{ fontSize: 11 }}
-              minTickGap={80}
+              tickCount={8}
+              minTickGap={60}
             />
             <YAxis
               tick={{ fontSize: 11 }}

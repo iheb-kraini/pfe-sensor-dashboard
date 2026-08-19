@@ -126,9 +126,10 @@ export function UsersTable({
         </Box>
       )}
 
-      <Table.Root>
+      <Box overflow="hidden" rounded="xl">
+        <Table.Root bg="transparent">
         <Table.Header>
-          <Table.Row>
+          <Table.Row bg="transparent">
             <Table.ColumnHeader
               fontWeight="semibold"
               color="muted.500"
@@ -189,7 +190,7 @@ export function UsersTable({
         <Table.Body>
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
-              <Table.Row key={i}>
+              <Table.Row key={i} bg="transparent">
                 {Array.from({ length: 6 }).map((_, j) => (
                   <Table.Cell key={j}>
                     <Skeleton h="20px" rounded="md" />
@@ -198,7 +199,7 @@ export function UsersTable({
               </Table.Row>
             ))
           ) : data?.length === 0 ? (
-            <Table.Row>
+            <Table.Row bg="transparent">
               <Table.Cell
                 colSpan={6}
                 textAlign="center"
@@ -210,7 +211,7 @@ export function UsersTable({
             </Table.Row>
           ) : (
             data?.map((user) => (
-              <Table.Row key={user.id} transition="background 0.15s" _hover={{ bg: "muted.100" }}>
+              <Table.Row key={user.id} bg="transparent" transition="background 0.15s" _hover={{ bg: "muted.100" }}>
                 <Table.Cell fontWeight="medium" color="muted.900">
                   {user.firstName} {user.lastName}
                 </Table.Cell>
@@ -292,6 +293,7 @@ export function UsersTable({
           )}
         </Table.Body>
       </Table.Root>
+      </Box>
 
       {totalPages > 1 && (
         <HStack justify="center" mt={6} gap={3}>

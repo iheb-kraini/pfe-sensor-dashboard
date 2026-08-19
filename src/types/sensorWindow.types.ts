@@ -1,9 +1,3 @@
-export interface AccelSample {
-  x: number;
-  y: number;
-  z: number;
-}
-
 export interface SensorWindow {
   id: number;
   recordedAt: string;
@@ -12,7 +6,7 @@ export interface SensorWindow {
   speedKmph: number | null;
   satellites: number | null;
   gpsSynced: boolean;
-  samples: AccelSample[];
+  analysis?: VibrationAnalysis;
 }
 
 export interface SensorWindowsResponse {
@@ -37,9 +31,11 @@ export interface VibrationAnalysis {
     dominantFreq: number;
     amplitude: number;
     peaks: { freq: number; amplitude: number }[];
+    spectrum?: { freq: number; amplitude: number }[];
     freqResolution: number;
   };
   processedAt: string;
+  windows?: VibrationAnalysis[];
 }
 
 export interface AnalysisWindow {
