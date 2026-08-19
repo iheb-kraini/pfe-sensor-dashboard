@@ -137,11 +137,7 @@ export function NotificationDrawer({
                         {new Date(n.resolvedAt).toLocaleString()}
                       </DetailRow>
                     )}
-                    {n.sensorWindowId && (
-                      <DetailRow label="Sensor Window">
-                        #{n.sensorWindowId}
-                      </DetailRow>
-                    )}
+                    
                   </Stack>
 
                   {nextStates.length > 0 && (

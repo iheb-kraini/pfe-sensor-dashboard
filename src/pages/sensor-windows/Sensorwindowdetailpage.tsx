@@ -6,18 +6,18 @@ import {
   Button,
   Heading,
   HStack,
+  IconButton,
   SimpleGrid,
   Skeleton,
   Stack,
   Text,
 } from "@chakra-ui/react";
 import { sensorWindowsApi } from "../../api/endpoints/sensorWindows.api";
-import { computeMetrics, computeFft } from "../../utils/sensorMetrics";
 import type { SensorWindow } from "../../types/sensorWindow.types";
-import { FftSpectrumChart } from "../../components/sensor-windows/FftSpectrumChart";
 import { StatCard } from "../../components/sensor-windows/StatCard";
 import { AxisBlock } from "../../components/sensor-windows/AxisBlock";
 import { MapCard } from "../../components/sensor-windows/MapCard";
+import { IoMdArrowBack } from "react-icons/io";
 
 export function SensorWindowDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -37,18 +37,22 @@ export function SensorWindowDetailPage() {
       .finally(() => setIsLoading(false));
   }, [id]);
 
-  const metrics = data?.samples.length ? computeMetrics(data.samples) : null;
-  const fft = data?.samples.length ? computeFft(data.samples) : null;
+  const analysis = data?.analysis;
+  const dominantAxis = analysis
+    ? (([ "y", "z"] as const).reduce((a, b) =>
+        analysis.rms[a] >= analysis.rms[b] ? a : b,
+      ) as  | "y" | "z")
+    : null;
 
   return (
     <Box p={6}>
       {/* Header */}
       <HStack mb={6} gap={4}>
-        <Button size="sm" variant="ghost" onClick={() => navigate(-1)}>
-          ← Back
-        </Button>
+        <IconButton size="sm" variant="ghost" onClick={() => navigate(-1)}>
+          <IoMdArrowBack />
+        </IconButton>
         <Box>
-          <Heading size="lg">Sensor Window #{id}</Heading>
+          <Heading size="lg">Notification detail </Heading>
           {data && (
             <Text color="gray.500" fontSize="sm" mt={0.5}>
               Recorded {new Date(data.recordedAt).toLocaleString()}
@@ -84,18 +88,18 @@ export function SensorWindowDetailPage() {
             accent="purple.400"
             isLoading={isLoading}
           />
-          <StatCard
-            label="Samples"
-            value={data?.samples.length ?? "—"}
+          {/* <StatCard
+            label="Windows"
+            value={windowCount ?? "—"}
             accent="teal.400"
             isLoading={isLoading}
-          />
-          <StatCard
+          /> */}
+          {/* <StatCard
             label="Dominant Axis"
-            value={metrics ? metrics.dominantAxis.toUpperCase() : "—"}
+            value={dominantAxis ? dominantAxis.toUpperCase() : "—"}
             accent="orange.400"
             isLoading={isLoading}
-          />
+          /> */}
         </SimpleGrid>
 
         {/* Map */}
@@ -130,28 +134,84 @@ export function SensorWindowDetailPage() {
                 <Skeleton key={i} h="140px" rounded="lg" />
               ))}
             </SimpleGrid>
-          ) : metrics ? (
-            <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
-              {(["x", "y", "z"] as const).map((axis) => (
+          ) : analysis ? (
+            <HStack justifyContent={"space-between"} >
+              {([ "y", "z"] as const).map((axis) => (
                 <AxisBlock
                   key={axis}
                   axis={axis}
-                  {...metrics[axis]}
-                  isDominant={metrics.dominantAxis === axis}
+                  rms={analysis.rms[axis]}
+                  p2p={analysis.peakToPeak[axis]}
+                  isDominant={dominantAxis === axis}
                 />
               ))}
-            </SimpleGrid>
+            </HStack>
           ) : (
             <Text color="gray.400" fontSize="sm">
-              No samples available
+              No analysis available for this window
             </Text>
           )}
         </Box>
 
-        {/* FFT Spectrum */}
-        <Box>
-          <FftSpectrumChart fft={fft} isLoading={isLoading} />
-        </Box>
+        {/* Frequency analysis */}
+        {/* <Box
+          bg="white"
+          rounded="xl"
+          p={5}
+          borderWidth="1px"
+          borderColor="gray.100"
+          shadow="sm"
+        >
+          <Text
+            fontSize="xs"
+            color="gray.400"
+            fontWeight="semibold"
+            textTransform="uppercase"
+            letterSpacing="wider"
+            mb={4}
+          >
+            Frequency Analysis
+          </Text>
+          {isLoading ? (
+            <Skeleton h="120px" rounded="lg" />
+          ) : analysis?.fft && analysis.fft.peaks.length > 0 ? (
+            <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
+              <StatCard
+                label="Dominant Frequency"
+                value={`${analysis.fft.dominantFreq.toFixed(1)} Hz`}
+                accent="blue.400"
+                isLoading={false}
+              />
+              <StatCard
+                label="Amplitude"
+                value={analysis.fft.amplitude.toFixed(4)}
+                accent="green.400"
+                isLoading={false}
+              />
+              <Box>
+                <Text fontSize="xs" color="gray.400" fontWeight="medium" mb={2}>
+                  Top Peaks
+                </Text>
+                <Stack gap={1}>
+                  {analysis.fft.peaks.slice(0, 5).map((peak, i) => (
+                    <HStack key={i} justify="space-between">
+                      <Text fontSize="sm" fontWeight="semibold" color="gray.700" fontFamily="mono">
+                        {peak.freq.toFixed(1)} Hz
+                      </Text>
+                      <Text fontSize="sm" color="gray.500" fontFamily="mono">
+                        {peak.amplitude.toFixed(4)}
+                      </Text>
+                    </HStack>
+                  ))}
+                </Stack>
+              </Box>
+            </SimpleGrid>
+          ) : (
+            <Text color="gray.400" fontSize="sm">
+              No FFT data available for this window
+            </Text>
+          )}
+        </Box> */}
       </Stack>
     </Box>
   );

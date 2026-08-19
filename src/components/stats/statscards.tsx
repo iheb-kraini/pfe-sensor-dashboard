@@ -87,15 +87,14 @@ export function StatsCards({
         icon={<LuUsers size={22} />}
         label="Total Users"
         value={totalUsers}
-        sub="active"
-        subValue={activeUsers}
+        
         isLoading={isLoading}
       />
       <StatCard
         icon={<LuUserCheck size={22} />}
         label="Active Users"
         value={activeUsers}
-        sub={`of ${totalUsers} total`}
+        sub={`of ${totalUsers} inactive`}
         subValue={totalUsers - activeUsers}
         isLoading={isLoading}
       />
