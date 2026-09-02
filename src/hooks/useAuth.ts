@@ -12,7 +12,7 @@ export function useLogin() {
     mutationFn: authApi.login,
     onSuccess: (data) => {
       setTokens(data.accessToken, data.refreshToken);
-      navigate("/devices", { replace: true });
+      navigate("/", { replace: true });
     },
     onError: (error: unknown) => {
       const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Login failed";
