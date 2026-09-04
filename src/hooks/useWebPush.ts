@@ -18,6 +18,7 @@ export function useWebPush() {
   const [isPending, setIsPending] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const registrationRef = useRef<ServiceWorkerRegistration | null>(null);
+  const hadUserRef = useRef(!!useAuthStore.getState().user);
 
   const isSupported =
     typeof window !== "undefined" &&
@@ -46,6 +47,11 @@ export function useWebPush() {
         console.log("Push subscription:", sub ? "active" : "none");
         if (sub) console.log("  endpoint:", sub.endpoint.slice(0, 50) + "...");
         setIsSubscribed(!!sub);
+        // Re-sync the browser subscription to the backend on every load so a
+        // wiped/reset push_subscriptions table gets repopulated.
+        if (sub) {
+          pushApi.subscribe(sub.toJSON()).catch(() => {});
+        }
       })
       .catch((err) => {
         console.error("SW registration failed:", err);
@@ -54,9 +60,13 @@ export function useWebPush() {
       .finally(() => setIsChecking(false));
   }, [isSupported]);
 
-  // Auto-unsubscribe on logout
+  // Auto-unsubscribe on logout — only when transitioning from a logged-in
+  // session to logged-out, so a mount with no user never wipes a subscription.
   useEffect(() => {
-    if (!user) {
+    const hadUser = hadUserRef.current;
+    hadUserRef.current = !!user;
+
+    if (!user && hadUser) {
       unsubscribeBrowser();
       setIsSubscribed(false);
       pushApi.unsubscribe().catch(() => {});
