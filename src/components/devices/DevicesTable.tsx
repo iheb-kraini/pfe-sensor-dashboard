@@ -47,8 +47,6 @@ export function DevicesTable({
       <Table.Header>
         <Table.Row bg="transparent">
           <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Name</Table.ColumnHeader>
-          <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Serial Number</Table.ColumnHeader>
-          <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Status</Table.ColumnHeader>
           <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Active</Table.ColumnHeader>
           <Table.ColumnHeader fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Created At</Table.ColumnHeader>
           <Table.ColumnHeader textAlign="center" fontWeight="semibold" color="muted.500" fontSize="xs" textTransform="uppercase" letterSpacing="wider">Actions</Table.ColumnHeader>
@@ -58,7 +56,7 @@ export function DevicesTable({
         {isLoading ? (
           Array.from({ length: 5 }).map((_, i) => (
             <Table.Row key={i} bg="transparent">
-              {Array.from({ length: 6 }).map((_, j) => (
+              {Array.from({ length: 4 }).map((_, j) => (
                 <Table.Cell key={j}>
                   <Skeleton h="20px" rounded="md" />
                 </Table.Cell>
@@ -67,7 +65,7 @@ export function DevicesTable({
           ))
         ) : isEmpty ? (
           <Table.Row bg="transparent">
-            <Table.Cell colSpan={6} textAlign="center" py={8} color="muted.400">
+            <Table.Cell colSpan={4} textAlign="center" py={8} color="muted.400">
               No devices found
             </Table.Cell>
           </Table.Row>
@@ -75,22 +73,6 @@ export function DevicesTable({
           data?.data.map((device) => (
             <Table.Row key={device.id} bg="transparent" transition="background 0.15s" _hover={{ bg: "muted.100" }}>
               <Table.Cell fontWeight="medium" color="muted.900">{device.name}</Table.Cell>
-              <Table.Cell color="muted.500" fontSize="sm">
-                {device.serialNumber}
-              </Table.Cell>
-              <Table.Cell>
-                <Badge
-                  colorPalette={
-                    device.status === "online"
-                      ? "green"
-                      : device.status === "maintenance"
-                        ? "orange"
-                        : "gray"
-                  }
-                >
-                  {device.status}
-                </Badge>
-              </Table.Cell>
               <Table.Cell>
                 <Badge colorPalette={device.isActive ? "green" : "red"}>
                   {device.isActive ? "Active" : "Inactive"}

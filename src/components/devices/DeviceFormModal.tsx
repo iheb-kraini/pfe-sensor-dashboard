@@ -5,7 +5,6 @@ import {
   Input,
   Portal,
   Stack,
-  NativeSelect,
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
@@ -43,8 +42,6 @@ export function DeviceFormModal({ open, onClose, device }: Props) {
     defaultValues: device
       ? {
           name: device.name,
-          serialNumber: device.serialNumber,
-          status: device.status,
           isActive: device.isActive,
         }
       : {},
@@ -56,8 +53,6 @@ export function DeviceFormModal({ open, onClose, device }: Props) {
         device
           ? {
               name: device.name,
-              serialNumber: device.serialNumber,
-              status: device.status,
               isActive: device.isActive,
             }
           : {},
@@ -93,31 +88,6 @@ export function DeviceFormModal({ open, onClose, device }: Props) {
                     <Field.Label>Name</Field.Label>
                     <Input placeholder="Box-01" {...register("name")} />
                     <Field.ErrorText>{errors.name?.message}</Field.ErrorText>
-                  </Field.Root>
-
-                  <Field.Root invalid={!!errors.serialNumber}>
-                    <Field.Label>Serial Number</Field.Label>
-                    <Input
-                      placeholder="2356698"
-                      {...register("serialNumber")}
-                      disabled={isEdit}
-                    />
-                    <Field.ErrorText>
-                      {errors.serialNumber?.message}
-                    </Field.ErrorText>
-                  </Field.Root>
-
-                  <Field.Root invalid={!!errors.status}>
-                    <Field.Label>Status</Field.Label>
-                    <NativeSelect.Root>
-                      <NativeSelect.Field {...register("status")}>
-                        <option value="offline">Offline</option>
-                        <option value="online">Online</option>
-                        <option value="maintenance">Maintenance</option>
-                      </NativeSelect.Field>
-                      <NativeSelect.Indicator />
-                    </NativeSelect.Root>
-                    <Field.ErrorText>{errors.status?.message}</Field.ErrorText>
                   </Field.Root>
                 </Stack>
               </Dialog.Body>
