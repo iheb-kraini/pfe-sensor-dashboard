@@ -13,7 +13,7 @@ export function useAdminStats() {
     totalUsers: data?.totalUsers ?? 0,
     activeUsers: data?.activeUsers ?? 0,
     totalDevices: data?.totalDevices ?? 0,
-    onlineDevices: data?.onlineDevices ?? 0,
+    activeDevices: data?.activeDevices ?? 0,
     totalAlerts: data?.totalAlerts ?? 0,
     unreadAlerts: data?.unreadAlerts ?? 0,
   };

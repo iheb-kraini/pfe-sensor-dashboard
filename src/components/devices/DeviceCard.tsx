@@ -23,23 +23,8 @@ export function DeviceCard({
           <Text fontWeight="semibold" fontSize="sm" color="muted.900">
             {device.name}
           </Text>
-          <Text fontSize="xs" color="muted.400" mt={0.5}>
-            {device.serialNumber}
-          </Text>
         </Box>
         <HStack gap={2}>
-          <Badge
-            colorPalette={
-              device.status === "online"
-                ? "green"
-                : device.status === "maintenance"
-                  ? "orange"
-                  : "gray"
-            }
-            fontSize="xs"
-          >
-            {device.status}
-          </Badge>
           <Badge colorPalette={device.isActive ? "green" : "red"} fontSize="xs">
             {device.isActive ? "Active" : "Inactive"}
           </Badge>

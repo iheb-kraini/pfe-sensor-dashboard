@@ -15,12 +15,6 @@ import { useState } from "react";
 import { LuCopy, LuPower, LuRefreshCw } from "react-icons/lu";
 import type { Device } from "../../types/device.types";
 
-const statusColor: Record<string, string> = {
-  online: "green",
-  offline: "red",
-  maintenance: "orange",
-};
-
 interface Props {
   device: Device;
   isActivating: boolean;
@@ -63,15 +57,6 @@ export function DeviceInfoCard({
             {device.name}
           </Text>
           <HStack gap={4} fontSize="sm" color="muted.500" mb={1}>
-            <Text>
-              Serial:{" "}
-              <Text as="span" fontFamily="mono" color="muted.700">
-                {device.serialNumber}
-              </Text>
-            </Text>
-            <Badge colorPalette={statusColor[device.status]} size="sm">
-              {device.status}
-            </Badge>
             <Badge
               colorPalette={device.isActive ? "green" : "red"}
               size="sm"

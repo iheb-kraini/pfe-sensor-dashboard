@@ -5,7 +5,6 @@ import { useAuthStore } from "../../store/auth.store";
 import { useDevices } from "../../hooks/useDevices";
 import { useNotifications } from "../../hooks/useNotifications";
 import { NotificationItem } from "../../components/notifications/NotificationItem";
-import type { DeviceStatus } from "../../types/device.types";
 
 export function HomePage() {
   const user = useAuthStore((s) => s.user);
@@ -17,13 +16,8 @@ export function HomePage() {
 
   const devices = deviceData?.data ?? [];
 
-  const statusCounts = devices.reduce<Record<DeviceStatus, number>>(
-    (acc, d) => {
-      acc[d.status] = (acc[d.status] ?? 0) + 1;
-      return acc;
-    },
-    { online: 0, offline: 0, maintenance: 0 },
-  );
+  const activeCount = devices.filter((d) => d.isActive).length;
+  const inactiveCount = devices.length - activeCount;
 
   const totalDevices = devices.length;
 
@@ -43,9 +37,8 @@ export function HomePage() {
 
       <HStack gap={4} flexWrap="wrap" mb={6}>
         <SummaryStat label="Total Devices" value={totalDevices} />
-        <SummaryStat label="Online" value={statusCounts.online ?? 0} color="green.500" />
-        <SummaryStat label="Offline" value={statusCounts.offline ?? 0} color="red.500" />
-        <SummaryStat label="Maintenance" value={statusCounts.maintenance ?? 0} color="orange.500" />
+        <SummaryStat label="Active" value={activeCount} color="green.500" />
+        <SummaryStat label="Inactive" value={inactiveCount} color="red.500" />
       </HStack>
 
       <SimpleGrid columns={{ base: 1, md: 2 }} gap={6} mb={6}>
@@ -139,10 +132,9 @@ export function HomePage() {
                 borderColor="muted.50"
               >
                 <HStack gap={3}>
-                  <Box w="2" h="2" rounded="full" bg={device.status === "online" ? "green.500" : device.status === "offline" ? "red.500" : "orange.500"} />
                   <Stack gap={0}>
                     <Text fontSize="sm" fontWeight="semibold" color="muted.900">{device.name}</Text>
-                    <Text fontSize="xs" color="muted.400">{device.serialNumber}</Text>
+                    <Text fontSize="xs" color="muted.400">Added {new Date(device.createdAt).toLocaleDateString()}</Text>
                   </Stack>
                 </HStack>
                 <LuArrowRight size={14} opacity={0.4} />
