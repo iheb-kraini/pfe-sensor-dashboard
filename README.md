@@ -1,4 +1,27 @@
-# React + TypeScript + Vite
+# Sensor Dashboard
+
+React dashboard for monitoring sensor devices, windows, and notifications.
+
+## Getting started
+
+```bash
+npm install
+cp .env.example .env   # Windows: Copy-Item .env.example .env
+npm run dev
+```
+
+## Environment variables
+
+Copy `.env.example` to `.env` and adjust as needed. All `VITE_*` variables are
+exposed to the browser — never put secrets here.
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `VITE_API_URL` | Yes | Backend API origin, e.g. `http://localhost:3000` |
+| `VITE_SOCKET_URL` | No | Socket.IO namespace URL. Defaults to `${VITE_API_URL}/notifications` |
+| `VITE_VAPID_PUBLIC_KEY` | Yes | Web Push public key; must match the backend's `VAPID_PUBLIC_KEY` |
+
+## React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
