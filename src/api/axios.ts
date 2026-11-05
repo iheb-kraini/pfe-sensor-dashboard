@@ -1,9 +1,10 @@
 import axios from "axios";
 import { tokenStorage } from "../utils/token";
 import { useAuthStore } from "../store/auth.store";
+import { env } from "../config/env";
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:3000",
+  baseURL: env.apiBaseUrl,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -33,7 +34,7 @@ api.interceptors.response.use(
 
       try {
         const { data } = await axios.post(
-          `${import.meta.env.VITE_API_URL ?? "http://localhost:3000"}/auth/refresh`,
+          `${env.apiBaseUrl}/auth/refresh`,
           { refresh_token: refreshToken },
         );
         useAuthStore.getState().setTokens(data.access_token, refreshToken);

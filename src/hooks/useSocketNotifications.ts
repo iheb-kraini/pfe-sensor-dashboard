@@ -6,8 +6,7 @@ import { tokenStorage } from "../utils/token";
 import { playNotificationSound } from "../components/notifications/NotificationSound";
 import type { Notification } from "../types/notification.types";
 import { toaster } from "../components/ui/toaster";
-
-const SOCKET_URL = "http://localhost:3000/notifications";
+import { env } from "../config/env";
 
 export function useSocketNotifications() {
   const { user } = useAuthStore();
@@ -28,7 +27,7 @@ export function useSocketNotifications() {
       socketRef.current = null;
     }
 
-    const socket = io(SOCKET_URL, {
+    const socket = io(env.socketUrl, {
       auth: { token },
     });
 

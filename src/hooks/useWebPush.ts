@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../store/auth.store";
 import { pushApi } from "../api/endpoints/push.api";
-
-const VAPID_PUBLIC_KEY =
-  "BP1jEM_OQnWcvblF_f92rbGKCFDNlXbm3FopfWx1ou6Padye9EjfrwgGKzlXi_IF5BcqxQp-G9_U4pT75qRV3xc";
+import { env } from "../config/env";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -90,7 +88,9 @@ export function useWebPush() {
         registrationRef.current = reg;
       }
 
-      const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource;
+      const applicationServerKey = urlBase64ToUint8Array(
+        env.vapidPublicKey,
+      ) as BufferSource;
       const subscription = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey,
