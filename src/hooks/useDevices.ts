@@ -22,7 +22,7 @@ export function useDevices(filters: DeviceQuery = {}) {
   // reset to page 1 whenever filters change
   useEffect(() => {
     setPage(1);
-  }, [filters.name, filters.status, filters.isActive]);
+  }, [filters.name, filters.isActive]);
 
   const query = { ...filters, page, limit: LIMIT };
 

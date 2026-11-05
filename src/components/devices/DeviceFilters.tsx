@@ -1,25 +1,20 @@
 import { Box, Button, HStack, Input, InputGroup, NativeSelect } from "@chakra-ui/react";
 import { LuSearch } from "react-icons/lu";
-import type { DeviceStatus } from "../../types/device.types";
 
 interface Props {
   name: string;
-  status: DeviceStatus | "";
   isActive: boolean | "";
   hasFilters: boolean;
   onNameChange: (v: string) => void;
-  onStatusChange: (v: DeviceStatus | "") => void;
   onIsActiveChange: (v: boolean | "") => void;
   onReset: () => void;
 }
 
 export function DeviceFilters({
   name,
-  status,
   isActive,
   hasFilters,
   onNameChange,
-  onStatusChange,
   onIsActiveChange,
   onReset,
 }: Props) {
@@ -33,19 +28,6 @@ export function DeviceFilters({
             onChange={(e) => onNameChange(e.target.value)}
           />
         </InputGroup>
-
-        <NativeSelect.Root maxW="160px">
-          <NativeSelect.Field
-            value={status}
-            onChange={(e) => onStatusChange(e.target.value as DeviceStatus | "")}
-          >
-            <option value="">All status</option>
-            <option value="online">Online</option>
-            <option value="offline">Offline</option>
-            <option value="maintenance">Maintenance</option>
-          </NativeSelect.Field>
-          <NativeSelect.Indicator />
-        </NativeSelect.Root>
 
         <NativeSelect.Root maxW="160px">
           <NativeSelect.Field

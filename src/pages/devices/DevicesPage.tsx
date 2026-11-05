@@ -33,12 +33,10 @@ export function DevicesPage() {
     useDeviceModal();
   const {
     name,
-    status,
     isActive,
     filters,
     hasFilters,
     setName,
-    setStatus,
     setIsActive,
     resetFilters,
   } = useDeviceFilters();
@@ -90,11 +88,9 @@ export function DevicesPage() {
       <Box bg="white" rounded="xl" shadow="sm" p={6}>
         <DeviceFilters
           name={name}
-          status={status}
           isActive={isActive}
           hasFilters={hasFilters}
           onNameChange={setName}
-          onStatusChange={setStatus}
           onIsActiveChange={setIsActive}
           onReset={resetFilters}
         />

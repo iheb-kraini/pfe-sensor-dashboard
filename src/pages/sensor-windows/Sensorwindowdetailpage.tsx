@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   Badge,
   Box,
-  Button,
   Heading,
   HStack,
   IconButton,

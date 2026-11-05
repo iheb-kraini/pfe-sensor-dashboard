@@ -4,7 +4,7 @@ export interface AdminStats {
   totalUsers: number;
   activeUsers: number;
   totalDevices: number;
-  onlineDevices: number;
+  activeDevices: number;
   totalAlerts: number;
   unreadAlerts: number;
 }

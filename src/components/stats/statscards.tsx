@@ -58,7 +58,7 @@ interface Props {
   totalUsers: number;
   activeUsers: number;
   totalDevices: number;
-  onlineDevices: number;
+  activeDevices: number;
   totalAlerts: number;
   unreadAlerts: number;
   isLoading: boolean;
@@ -68,7 +68,7 @@ export function StatsCards({
   totalUsers,
   activeUsers,
   totalDevices,
-  onlineDevices,
+  activeDevices,
   totalAlerts,
   unreadAlerts,
   isLoading,
@@ -102,8 +102,8 @@ export function StatsCards({
         icon={<LuRadio size={22} />}
         label="Total Devices"
         value={totalDevices}
-        sub="online"
-        subValue={onlineDevices}
+        sub="active"
+        subValue={activeDevices}
         isLoading={isLoading}
       />
       <StatCard

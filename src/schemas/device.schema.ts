@@ -2,8 +2,6 @@ import { z } from "zod";
 
 export const createDeviceSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  serialNumber: z.string().min(1, "Serial number is required"),
-  status: z.enum(["online", "offline", "maintenance"]).optional(),
   isActive: z.boolean().optional(),
 });
 

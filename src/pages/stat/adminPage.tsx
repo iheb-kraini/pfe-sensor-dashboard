@@ -54,7 +54,7 @@ export function AdminPage() {
         totalUsers={stats.totalUsers}
         activeUsers={stats.activeUsers}
         totalDevices={stats.totalDevices}
-        onlineDevices={stats.onlineDevices}
+        activeDevices={stats.activeDevices}
         totalAlerts={stats.totalAlerts}
         unreadAlerts={stats.unreadAlerts}
         isLoading={stats.isLoading}
